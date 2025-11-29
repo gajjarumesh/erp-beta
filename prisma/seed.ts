@@ -20,11 +20,13 @@ async function main() {
   console.log('✅ Created company:', company.name)
 
   // Create Users
+  // NOTE: This is seed data for development/demo purposes only.
+  // In production, passwords should be properly hashed using bcrypt or similar.
   const adminUser = await prisma.user.create({
     data: {
       email: 'admin@acme.com',
       name: 'Admin User',
-      password: '$2b$10$dummyhashedpassword', // In production, use proper hashing
+      password: 'DEVELOPMENT_ONLY_CHANGE_IN_PRODUCTION', // Replace with proper hashed password in production
       role: 'ADMIN',
       companyId: company.id,
     },
