@@ -439,7 +439,7 @@ export default function QuotationsPage() {
                     <td className="px-4 py-2">
                       <select className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-800">
                         <option>Select product...</option>
-                        <option>MacBook Pro 16&quot;</option>
+                        <option>MacBook Pro 16 inch</option>
                         <option>iPhone 15 Pro</option>
                       </select>
                     </td>

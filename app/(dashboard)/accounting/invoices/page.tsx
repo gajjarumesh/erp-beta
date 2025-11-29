@@ -582,7 +582,7 @@ export default function InvoicesPage() {
             </Button>
             <Button type="submit">
               <Send className="h-4 w-4 mr-2" />
-              Create &amp; Send
+              Create and Send
             </Button>
           </div>
         </form>
