@@ -9,13 +9,15 @@ interface CardProps {
   hover?: boolean
   gradient?: boolean
   children?: React.ReactNode
+  onClick?: () => void
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, hover = true, gradient = false, children, ...props }, ref) => {
+  ({ className, hover = true, gradient = false, children, onClick, ...props }, ref) => {
     const baseClasses = cn(
       'rounded-xl border bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
       gradient && 'bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900',
+      onClick && 'cursor-pointer',
       className
     )
 
@@ -26,6 +28,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           whileHover={{ y: -2, boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.1)' }}
           transition={{ duration: 0.2 }}
           className={baseClasses}
+          onClick={onClick}
           {...props}
         >
           {children}
@@ -34,7 +37,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     }
 
     return (
-      <div ref={ref} className={baseClasses} {...props}>
+      <div ref={ref} className={baseClasses} onClick={onClick} {...props}>
         {children}
       </div>
     )
