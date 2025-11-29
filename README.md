@@ -1,96 +1,131 @@
-# ERP System
+# NexusERP - SaaS Business Suite
 
-A modern Enterprise Resource Planning (ERP) system inspired by Odoo's framework architecture, built with cutting-edge technologies and a beautiful, animated UI.
+A modern, SaaS-based Enterprise Resource Planning (ERP) system inspired by Odoo's modular architecture. Built with cutting-edge technologies, featuring a beautiful landing page, app marketplace, flexible pricing plans, and comprehensive business modules.
 
-## 🚀 Features
+## 🌟 SaaS Features
 
-### Core Modules
-- **Dashboard** - Main dashboard with animated cards, interactive charts, and real-time statistics
-- **Sales** - Sales orders management, customer management, quotations, and sales analytics
-- **Inventory** - Product management, stock tracking, warehouse management, and inventory valuation
-- **Accounting** - Invoice management, payment tracking, and financial reports
-- **HR** - Employee management, attendance tracking, and leave management
-- **CRM** - Lead management, pipeline visualization, and conversion analytics
+### Multi-tenant Architecture
+- **Company/Tenant Isolation** - Each organization has isolated data
+- **Subscription Plans** - Free, Starter, Professional, Enterprise tiers
+- **App Marketplace** - Install only the apps you need
+- **Per-app Pricing** - Pay for what you use
 
-### Technical Features
-- 🎨 Modern, responsive UI with dark/light mode support
-- ✨ Smooth animations using Framer Motion
-- 📊 Interactive charts with Chart.js
-- 🗄️ PostgreSQL database with Prisma ORM
-- 🔒 TypeScript for type safety
-- 📱 Mobile-first responsive design
+### Landing Page
+- Modern, animated hero section with app selector
+- Interactive pricing comparison
+- Customer testimonials
+- Feature highlights
+- Call-to-action sections
+
+### App Store
+- Browse 20+ business applications
+- Filter by category (Sales, Operations, Finance, HR, Marketing, Productivity)
+- One-click installation
+- App ratings and reviews
+- Integration information
+
+### Authentication
+- User registration with plan selection
+- Secure login with social OAuth options
+- Company setup wizard
+- Demo credentials for testing
+
+## 🚀 Business Modules
+
+### Installed by Default
+- **Dashboard** - KPI cards, sales/revenue charts, recent activity
+
+### Sales & CRM
+- **Sales** - Orders, customers, quotations with full CRUD
+- **CRM** - Lead pipeline, opportunity tracking, conversion analytics
+- **Point of Sale** - Retail/restaurant checkout (coming soon)
+
+### Operations
+- **Inventory** - Products, stock tracking, warehouse management
+- **Purchase** - Vendor management, purchase orders (coming soon)
+- **Manufacturing** - BOM, work orders, production planning (coming soon)
+
+### Finance
+- **Accounting** - Invoices, payments, financial reports
+- **Expenses** - Employee expense tracking (coming soon)
+
+### Human Resources
+- **Employees** - Directory, departments, org charts
+- **Time Off** - Leave requests, approvals
+- **Payroll** - Salary processing (coming soon)
+- **Recruitment** - Job postings, applicant tracking (coming soon)
+
+### Marketing & Productivity
+- **Email Marketing** - Campaigns, templates (coming soon)
+- **Project** - Tasks, milestones, time tracking (coming soon)
+- **Helpdesk** - Support tickets, SLA management (coming soon)
+- **Website Builder** - Drag & drop pages (coming soon)
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 16 (App Router)
-- **Styling**: Tailwind CSS
+- **Frontend**: Next.js 16 (App Router) + TypeScript
+- **Styling**: Tailwind CSS 4
 - **Animations**: Framer Motion
-- **Charts**: Chart.js with react-chartjs-2
+- **Charts**: Chart.js via react-chartjs-2
 - **Database**: PostgreSQL
 - **ORM**: Prisma
+- **Theming**: next-themes (Dark/Light mode)
 - **Icons**: Lucide React
 
 ## 📦 Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - PostgreSQL (or Docker)
 
-### Installation
+### Quick Start
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/erp-beta.git
-   cd erp-beta
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/erp-beta.git
+cd erp-beta
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+# Install dependencies
+npm install
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   Update the `DATABASE_URL` in `.env` with your PostgreSQL connection string.
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your DATABASE_URL
 
-4. **Start PostgreSQL** (using Docker)
-   ```bash
-   docker-compose up -d
-   ```
+# Start PostgreSQL with Docker
+docker-compose up -d
 
-5. **Generate Prisma client**
-   ```bash
-   npm run db:generate
-   ```
+# Generate Prisma client & push schema
+npm run db:generate
+npm run db:push
 
-6. **Run database migrations**
-   ```bash
-   npm run db:push
-   ```
+# Seed demo data (optional)
+npm run db:seed
 
-7. **Seed the database** (optional)
-   ```bash
-   npm run db:seed
-   ```
+# Start development server
+npm run dev
+```
 
-8. **Start the development server**
-   ```bash
-   npm run dev
-   ```
+Open [http://localhost:3000](http://localhost:3000) to see the landing page.
 
-9. Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Demo Credentials
+
+- **Email**: demo@nexuserp.com
+- **Password**: demo123
 
 ## 📁 Project Structure
 
 ```
 /app
-  /api                    # API routes
-  /(auth)                 # Authentication pages
-  /(dashboard)            # Dashboard and module pages
+  page.tsx                    # Landing page
+  /app-store                  # App marketplace
+  /auth
+    /login                    # Sign in page
+    /register                 # Registration with plan selection
+  /pricing                    # Pricing page
+  /(dashboard)                # Protected dashboard area
     /dashboard
     /sales
     /inventory
@@ -99,21 +134,41 @@ A modern Enterprise Resource Planning (ERP) system inspired by Odoo's framework 
     /crm
     /settings
 /components
-  /ui                     # Reusable UI components
-  /charts                 # Chart.js wrapper components
-  /layouts                # Layout components
-  /modules                # Module-specific components
+  /ui                         # Reusable UI components
+  /charts                     # Chart.js wrappers
+  /layouts                    # Sidebar, Header, Dashboard layout
 /lib
-  /prisma.ts              # Prisma client
-  /utils.ts               # Utility functions
+  /prisma.ts                  # Database client
+  /utils.ts                   # Utility functions
 /prisma
-  /schema.prisma          # Database schema
-  /seed.ts                # Seed data
-/styles
-  /globals.css            # Global styles
+  /schema.prisma              # Multi-tenant database schema
+  /seed.ts                    # Demo data seeder
 ```
 
-## 🔧 Available Scripts
+## 🗄️ Database Schema
+
+### Multi-tenancy & Subscriptions
+- **Plan** - Subscription tiers with features/limits
+- **Subscription** - Company subscription status
+- **App** - Available applications
+- **CompanyApp** - Installed apps per company
+
+### Core Entities
+- **User** - Authentication with roles (Super Admin, Admin, Manager, User)
+- **Company** - Tenant/organization with settings
+- **Session** - User sessions
+- **AuditLog** - Activity tracking
+
+### Business Entities
+- Products, Categories, Customers, Vendors
+- Sales Orders, Order Lines, Quotations
+- Invoices, Payments
+- Employees, Departments, Attendance, Leave
+- Warehouses, Stock Moves
+- Leads, Opportunities
+- Projects, Tasks, Tickets, Campaigns
+
+## 🔧 Scripts
 
 | Command | Description |
 |---------|-------------|
@@ -124,38 +179,36 @@ A modern Enterprise Resource Planning (ERP) system inspired by Odoo's framework 
 | `npm run db:generate` | Generate Prisma client |
 | `npm run db:push` | Push schema to database |
 | `npm run db:migrate` | Run migrations |
-| `npm run db:seed` | Seed the database |
+| `npm run db:seed` | Seed demo data |
 | `npm run db:studio` | Open Prisma Studio |
 
-## 🎨 UI Features
+## 🎨 UI/UX Features
 
-- **Glassmorphism** effects for modern aesthetics
-- **Gradient accents** for visual appeal
-- **Smooth animations** for all interactions
-- **Professional color palette** suitable for business applications
-- **Responsive design** that works on all devices
-- **Dark/Light mode** toggle
+- **Modern SaaS Design** - Clean, professional aesthetics
+- **Responsive Layout** - Mobile-first approach
+- **Dark/Light Mode** - System preference or manual toggle
+- **Glassmorphism** - Subtle blur effects
+- **Gradient Accents** - Brand colors
+- **Framer Motion** - Smooth page transitions, hover effects
+- **Loading States** - Skeleton screens, spinners
+- **Toast Notifications** - Success/error feedback
 
-## 📊 Database Schema
+## 💰 Pricing Model
 
-The database includes tables for:
-- Users & Authentication
-- Companies/Organizations
-- Products & Categories
-- Customers & Vendors
-- Sales Orders & Order Lines
-- Invoices & Payments
-- Employees & Departments
-- Inventory & Stock Moves
-- Leads & Opportunities (CRM)
+| Plan | Price | Apps | Users | Records |
+|------|-------|------|-------|---------|
+| Free | $0 | 1 | 2 | 1,000 |
+| Starter | $29/user/mo | 3 | 10 | 10,000 |
+| Professional | $59/user/mo | All | 50 | Unlimited |
+| Enterprise | Custom | All | Unlimited | Unlimited |
 
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
 
-1. Push your code to GitHub
-2. Import your repository on [Vercel](https://vercel.com)
-3. Add your environment variables
+1. Push to GitHub
+2. Import on [Vercel](https://vercel.com)
+3. Add environment variables
 4. Deploy!
 
 ### Docker
@@ -166,8 +219,8 @@ docker-compose up -d
 
 ## 📝 License
 
-This project is licensed under the MIT License.
+MIT License - feel free to use for personal or commercial projects.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome! Please submit a Pull Request.

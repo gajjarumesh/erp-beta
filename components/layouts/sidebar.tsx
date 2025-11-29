@@ -16,6 +16,8 @@ import {
   ChevronDown,
   Menu,
   Building2,
+  Grid3X3,
+  Plus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -23,15 +25,22 @@ interface NavItem {
   name: string
   href: string
   icon: React.ElementType
+  color: string
   subItems?: { name: string; href: string }[]
 }
 
 const navigation: NavItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { 
+    name: 'Dashboard', 
+    href: '/dashboard', 
+    icon: LayoutDashboard,
+    color: 'from-blue-500 to-blue-600'
+  },
   {
     name: 'Sales',
     href: '/sales',
     icon: ShoppingCart,
+    color: 'from-indigo-500 to-indigo-600',
     subItems: [
       { name: 'Orders', href: '/sales' },
       { name: 'Customers', href: '/sales/customers' },
@@ -42,6 +51,7 @@ const navigation: NavItem[] = [
     name: 'Inventory',
     href: '/inventory',
     icon: Package,
+    color: 'from-orange-500 to-orange-600',
     subItems: [
       { name: 'Overview', href: '/inventory' },
       { name: 'Products', href: '/inventory/products' },
@@ -52,6 +62,7 @@ const navigation: NavItem[] = [
     name: 'Accounting',
     href: '/accounting',
     icon: Receipt,
+    color: 'from-green-500 to-green-600',
     subItems: [
       { name: 'Overview', href: '/accounting' },
       { name: 'Invoices', href: '/accounting/invoices' },
@@ -61,6 +72,7 @@ const navigation: NavItem[] = [
     name: 'HR',
     href: '/hr',
     icon: Users,
+    color: 'from-pink-500 to-pink-600',
     subItems: [
       { name: 'Overview', href: '/hr' },
       { name: 'Employees', href: '/hr/employees' },
@@ -71,12 +83,18 @@ const navigation: NavItem[] = [
     name: 'CRM',
     href: '/crm',
     icon: UserCircle,
+    color: 'from-purple-500 to-purple-600',
     subItems: [
       { name: 'Overview', href: '/crm' },
       { name: 'Leads', href: '/crm/leads' },
     ],
   },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { 
+    name: 'Settings', 
+    href: '/settings', 
+    icon: Settings,
+    color: 'from-gray-500 to-gray-600'
+  },
 ]
 
 interface SidebarProps {
@@ -113,7 +131,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       <motion.aside
         initial={false}
         animate={{
-          width: isOpen ? 256 : 80,
+          width: isOpen ? 280 : 80,
           x: 0,
         }}
         className={cn(
@@ -123,21 +141,26 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between px-4 sticky top-0 bg-white dark:bg-gray-800 z-10">
+        <div className="flex h-16 items-center justify-between px-4 sticky top-0 bg-white dark:bg-gray-800 z-10 border-b border-gray-100 dark:border-gray-700">
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30">
               <Building2 className="h-6 w-6" />
             </div>
             <AnimatePresence>
               {isOpen && (
-                <motion.span
+                <motion.div
                   initial={{ opacity: 0, width: 0 }}
                   animate={{ opacity: 1, width: 'auto' }}
                   exit={{ opacity: 0, width: 0 }}
-                  className="text-xl font-bold text-gray-900 dark:text-white overflow-hidden whitespace-nowrap"
+                  className="overflow-hidden"
                 >
-                  ERP System
-                </motion.span>
+                  <span className="text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                    NexusERP
+                  </span>
+                  <span className="block text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    Professional Plan
+                  </span>
+                </motion.div>
               )}
             </AnimatePresence>
           </Link>
@@ -151,8 +174,47 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           </button>
         </div>
 
+        {/* Quick Actions (only when expanded) */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="px-4 py-3 border-b border-gray-100 dark:border-gray-700"
+            >
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/app-store"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                  App Store
+                </Link>
+                <button className="flex items-center justify-center h-9 w-9 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-colors">
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Navigation */}
         <nav className="mt-4 px-3 pb-4">
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="px-3 mb-2"
+              >
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Installed Apps
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <ul className="space-y-1">
             {navigation.map((item, index) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -179,7 +241,14 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                         )}
                       >
                         <div className="flex items-center gap-3">
-                          <Icon className={cn('h-5 w-5 flex-shrink-0', !isActive && 'group-hover:scale-110 transition-transform')} />
+                          <div className={cn(
+                            'flex h-9 w-9 items-center justify-center rounded-lg transition-all',
+                            isActive 
+                              ? 'bg-white/20' 
+                              : `bg-gradient-to-br ${item.color} shadow-sm`
+                          )}>
+                            <Icon className="h-5 w-5 flex-shrink-0 text-white" />
+                          </div>
                           <AnimatePresence>
                             {isOpen && (
                               <motion.span
@@ -208,7 +277,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="ml-8 mt-1 space-y-1 overflow-hidden"
+                            className="ml-12 mt-1 space-y-1 overflow-hidden"
                           >
                             {item.subItems?.map((subItem) => {
                               const isSubActive = pathname === subItem.href
@@ -219,7 +288,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                     className={cn(
                                       'block rounded-lg px-3 py-2 text-sm transition-colors',
                                       isSubActive
-                                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium'
                                         : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
                                     )}
                                   >
@@ -242,7 +311,14 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                           : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
                       )}
                     >
-                      <Icon className={cn('h-5 w-5 flex-shrink-0', !isActive && 'group-hover:scale-110 transition-transform')} />
+                      <div className={cn(
+                        'flex h-9 w-9 items-center justify-center rounded-lg transition-all',
+                        isActive 
+                          ? 'bg-white/20' 
+                          : `bg-gradient-to-br ${item.color} shadow-sm`
+                      )}>
+                        <Icon className="h-5 w-5 flex-shrink-0 text-white" />
+                      </div>
                       <AnimatePresence>
                         {isOpen && (
                           <motion.span
@@ -262,6 +338,33 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             })}
           </ul>
         </nav>
+
+        {/* Bottom Section */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+            >
+              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-100 dark:border-blue-800/30">
+                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  Need more apps?
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                  Explore our marketplace for more features
+                </p>
+                <Link
+                  href="/app-store"
+                  className="block text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Browse App Store →
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.aside>
     </>
   )

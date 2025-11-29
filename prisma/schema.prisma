@@ -10,49 +10,217 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User & Authentication
+// ==========================================
+// MULTI-TENANCY & SUBSCRIPTION MODELS
+// ==========================================
+
+// Subscription Plans
+model Plan {
+  id             String         @id @default(cuid())
+  name           String         @unique // free, starter, professional, enterprise
+  displayName    String
+  description    String?
+  monthlyPrice   Decimal        @db.Decimal(10, 2) @default(0)
+  yearlyPrice    Decimal        @db.Decimal(10, 2) @default(0)
+  maxUsers       Int            @default(2)
+  maxApps        Int            @default(1) // -1 for unlimited
+  maxRecords     Int            @default(1000) // -1 for unlimited
+  storageGb      Int            @default(1)
+  features       Json?          // Additional features as JSON
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  subscriptions  Subscription[]
+}
+
+// Tenant/Organization Subscription
+model Subscription {
+  id              String             @id @default(cuid())
+  companyId       String
+  company         Company            @relation(fields: [companyId], references: [id])
+  planId          String
+  plan            Plan               @relation(fields: [planId], references: [id])
+  status          SubscriptionStatus @default(TRIAL)
+  billingCycle    BillingCycle       @default(MONTHLY)
+  currentPeriodStart DateTime        @default(now())
+  currentPeriodEnd   DateTime
+  trialEndsAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  payments        SubscriptionPayment[]
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+// Subscription Payments
+model SubscriptionPayment {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  amount         Decimal      @db.Decimal(10, 2)
+  currency       String       @default("USD")
+  status         PaymentStatus @default(PENDING)
+  paymentMethod  String?
+  transactionId  String?
+  invoiceUrl     String?
+  paidAt         DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// Available Apps/Modules
+model App {
+  id           String      @id @default(cuid())
+  slug         String      @unique // sales, crm, inventory, etc.
+  name         String
+  description  String?
+  icon         String?
+  color        String?
+  category     String      // Sales, Operations, Finance, HR, Marketing, Productivity
+  monthlyPrice Decimal     @db.Decimal(10, 2) @default(0)
+  isCore       Boolean     @default(false) // Core apps like Dashboard
+  isActive     Boolean     @default(true)
+  features     Json?       // App features as JSON
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  companyApps  CompanyApp[]
+}
+
+// Company's Installed Apps
+model CompanyApp {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  appId       String
+  app         App      @relation(fields: [appId], references: [id])
+  installedAt DateTime @default(now())
+  isActive    Boolean  @default(true)
+  settings    Json?    // App-specific settings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([companyId, appId])
+}
+
+// ==========================================
+// USER & AUTHENTICATION
+// ==========================================
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
   name          String?
   password      String
+  avatar        String?
   role          Role      @default(USER)
   companyId     String?
   company       Company?  @relation(fields: [companyId], references: [id])
+  emailVerified DateTime?
+  lastLoginAt   DateTime?
+  isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   employee      Employee?
+  sessions      Session[]
+  notifications UserNotification[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token        String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model UserNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   // info, success, warning, error
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
 }
 
 enum Role {
-  ADMIN
+  SUPER_ADMIN // Platform admin
+  ADMIN       // Company admin
   MANAGER
   USER
 }
 
-// Companies/Organizations
+// ==========================================
+// COMPANIES/ORGANIZATIONS (TENANTS)
+// ==========================================
+
 model Company {
-  id          String       @id @default(cuid())
-  name        String
-  email       String?
-  phone       String?
-  address     String?
-  city        String?
-  country     String?
-  taxId       String?
-  logo        String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  users       User[]
-  employees   Employee[]
-  departments Department[]
-  customers   Customer[]
-  vendors     Vendor[]
-  products    Product[]
-  salesOrders SalesOrder[]
-  invoices    Invoice[]
-  leads       Lead[]
-  warehouses  Warehouse[]
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique // URL-friendly identifier
+  email         String?
+  phone         String?
+  website       String?
+  address       String?
+  city          String?
+  state         String?
+  postalCode    String?
+  country       String?
+  taxId         String?
+  logo          String?
+  timezone      String         @default("UTC")
+  currency      String         @default("USD")
+  dateFormat    String         @default("MM/DD/YYYY")
+  fiscalYearStart Int          @default(1) // Month (1-12)
+  settings      Json?          // Company-wide settings
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  // Subscription & Apps
+  subscriptions Subscription[]
+  installedApps CompanyApp[]
+  // Core relations
+  users         User[]
+  employees     Employee[]
+  departments   Department[]
+  customers     Customer[]
+  vendors       Vendor[]
+  products      Product[]
+  salesOrders   SalesOrder[]
+  invoices      Invoice[]
+  leads         Lead[]
+  warehouses    Warehouse[]
+  // Additional modules
+  categories    Category[]
+  quotations    Quotation[]
+  projects      Project[]
+  tasks         Task[]
+  tickets       Ticket[]
+  campaigns     Campaign[]
+  auditLogs     AuditLog[]
 }
 
 // Products & Categories
@@ -63,6 +231,8 @@ model Category {
   parentId    String?
   parent      Category? @relation("CategoryToCategory", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryToCategory")
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id])
   products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -105,6 +275,7 @@ model Customer {
   salesOrders SalesOrder[]
   invoices    Invoice[]
   leads       Lead[]
+  quotations  Quotation[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -394,4 +565,193 @@ enum LeadStatus {
   NEGOTIATION
   WON
   LOST
+}
+
+// ==========================================
+// ADDITIONAL MODULES
+// ==========================================
+
+// Quotations
+model Quotation {
+  id            String          @id @default(cuid())
+  quotationNo   String          @unique
+  customerId    String
+  customer      Customer        @relation(fields: [customerId], references: [id])
+  companyId     String
+  company       Company         @relation(fields: [companyId], references: [id])
+  status        QuotationStatus @default(DRAFT)
+  validUntil    DateTime
+  subtotal      Decimal         @db.Decimal(10, 2) @default(0)
+  tax           Decimal         @db.Decimal(10, 2) @default(0)
+  total         Decimal         @db.Decimal(10, 2) @default(0)
+  discount      Decimal         @db.Decimal(10, 2) @default(0)
+  notes         String?
+  terms         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  lines         QuotationLine[]
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CONVERTED
+}
+
+model QuotationLine {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  productId   String
+  productName String
+  quantity    Int
+  unitPrice   Decimal   @db.Decimal(10, 2)
+  discount    Decimal   @db.Decimal(5, 2) @default(0)
+  subtotal    Decimal   @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Projects & Tasks
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  companyId   String
+  company     Company       @relation(fields: [companyId], references: [id])
+  status      ProjectStatus @default(PLANNING)
+  priority    Priority      @default(MEDIUM)
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Decimal?      @db.Decimal(10, 2)
+  managerId   String?
+  progress    Int           @default(0) // 0-100
+  color       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  tasks       Task[]
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id])
+  companyId   String
+  company     Company    @relation(fields: [companyId], references: [id])
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  assigneeId  String?
+  dueDate     DateTime?
+  estimatedHours Decimal? @db.Decimal(5, 2)
+  actualHours    Decimal? @db.Decimal(5, 2)
+  tags        String[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+// Helpdesk Tickets
+model Ticket {
+  id          String       @id @default(cuid())
+  ticketNo    String       @unique
+  subject     String
+  description String
+  companyId   String
+  company     Company      @relation(fields: [companyId], references: [id])
+  status      TicketStatus @default(OPEN)
+  priority    Priority     @default(MEDIUM)
+  category    String?
+  customerId  String?
+  assigneeId  String?
+  resolution  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+}
+
+// Marketing Campaigns
+model Campaign {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  companyId   String
+  company     Company        @relation(fields: [companyId], references: [id])
+  type        CampaignType   @default(EMAIL)
+  status      CampaignStatus @default(DRAFT)
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Decimal?       @db.Decimal(10, 2)
+  spent       Decimal?       @db.Decimal(10, 2) @default(0)
+  targetAudience String?
+  metrics     Json?          // Opens, clicks, conversions, etc.
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+enum CampaignType {
+  EMAIL
+  SOCIAL
+  ADS
+  EVENTS
+  CONTENT
+  OTHER
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  RUNNING
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+// Audit Logs
+model AuditLog {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  userId      String?
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, etc.
+  entity      String   // Model name
+  entityId    String?
+  changes     Json?    // Before/after data
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
 }
