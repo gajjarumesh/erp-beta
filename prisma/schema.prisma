@@ -1,0 +1,397 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User & Authentication
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          Role      @default(USER)
+  companyId     String?
+  company       Company?  @relation(fields: [companyId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  employee      Employee?
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  USER
+}
+
+// Companies/Organizations
+model Company {
+  id          String       @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  city        String?
+  country     String?
+  taxId       String?
+  logo        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  users       User[]
+  employees   Employee[]
+  departments Department[]
+  customers   Customer[]
+  vendors     Vendor[]
+  products    Product[]
+  salesOrders SalesOrder[]
+  invoices    Invoice[]
+  leads       Lead[]
+  warehouses  Warehouse[]
+}
+
+// Products & Categories
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  parentId    String?
+  parent      Category? @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryToCategory")
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id              String         @id @default(cuid())
+  name            String
+  sku             String         @unique
+  description     String?
+  categoryId      String?
+  category        Category?      @relation(fields: [categoryId], references: [id])
+  price           Decimal        @db.Decimal(10, 2)
+  cost            Decimal        @db.Decimal(10, 2) @default(0)
+  quantity        Int            @default(0)
+  minQuantity     Int            @default(0)
+  unit            String         @default("unit")
+  isActive        Boolean        @default(true)
+  companyId       String
+  company         Company        @relation(fields: [companyId], references: [id])
+  orderLines      OrderLine[]
+  invoiceLines    InvoiceLine[]
+  stockMoves      StockMove[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+// Customers & Vendors
+model Customer {
+  id          String       @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  city        String?
+  country     String?
+  taxId       String?
+  companyId   String
+  company     Company      @relation(fields: [companyId], references: [id])
+  salesOrders SalesOrder[]
+  invoices    Invoice[]
+  leads       Lead[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Vendor {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  city      String?
+  country   String?
+  taxId     String?
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Sales Orders & Order Lines
+model SalesOrder {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique
+  customerId   String
+  customer     Customer    @relation(fields: [customerId], references: [id])
+  companyId    String
+  company      Company     @relation(fields: [companyId], references: [id])
+  status       OrderStatus @default(DRAFT)
+  orderDate    DateTime    @default(now())
+  deliveryDate DateTime?
+  subtotal     Decimal     @db.Decimal(10, 2) @default(0)
+  tax          Decimal     @db.Decimal(10, 2) @default(0)
+  total        Decimal     @db.Decimal(10, 2) @default(0)
+  notes        String?
+  orderLines   OrderLine[]
+  invoices     Invoice[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  DRAFT
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model OrderLine {
+  id           String     @id @default(cuid())
+  orderId      String
+  order        SalesOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product    @relation(fields: [productId], references: [id])
+  quantity     Int
+  unitPrice    Decimal    @db.Decimal(10, 2)
+  discount     Decimal    @db.Decimal(5, 2) @default(0)
+  subtotal     Decimal    @db.Decimal(10, 2)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// Invoices & Payments
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  companyId     String
+  company       Company       @relation(fields: [companyId], references: [id])
+  orderId       String?
+  order         SalesOrder?   @relation(fields: [orderId], references: [id])
+  status        InvoiceStatus @default(DRAFT)
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime
+  subtotal      Decimal       @db.Decimal(10, 2) @default(0)
+  tax           Decimal       @db.Decimal(10, 2) @default(0)
+  total         Decimal       @db.Decimal(10, 2) @default(0)
+  paidAmount    Decimal       @db.Decimal(10, 2) @default(0)
+  notes         String?
+  invoiceLines  InvoiceLine[]
+  payments      Payment[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIAL
+  OVERDUE
+  CANCELLED
+}
+
+model InvoiceLine {
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  discount  Decimal @db.Decimal(5, 2) @default(0)
+  subtotal  Decimal @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  invoiceId     String
+  invoice       Invoice       @relation(fields: [invoiceId], references: [id])
+  amount        Decimal       @db.Decimal(10, 2)
+  paymentDate   DateTime      @default(now())
+  paymentMethod PaymentMethod @default(CASH)
+  reference     String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  CHECK
+  OTHER
+}
+
+// Employees & Departments
+model Department {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  managerId   String?
+  companyId   String
+  company     Company    @relation(fields: [companyId], references: [id])
+  employees   Employee[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Employee {
+  id           String       @id @default(cuid())
+  employeeId   String       @unique
+  userId       String?      @unique
+  user         User?        @relation(fields: [userId], references: [id])
+  firstName    String
+  lastName     String
+  email        String
+  phone        String?
+  address      String?
+  city         String?
+  country      String?
+  dateOfBirth  DateTime?
+  hireDate     DateTime     @default(now())
+  jobTitle     String?
+  departmentId String?
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  companyId    String
+  company      Company      @relation(fields: [companyId], references: [id])
+  salary       Decimal      @db.Decimal(10, 2) @default(0)
+  isActive     Boolean      @default(true)
+  attendances  Attendance[]
+  leaves       Leave[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Attendance {
+  id         String    @id @default(cuid())
+  employeeId String
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  checkIn    DateTime
+  checkOut   DateTime?
+  workHours  Decimal?  @db.Decimal(4, 2)
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Leave {
+  id          String      @id @default(cuid())
+  employeeId  String
+  employee    Employee    @relation(fields: [employeeId], references: [id])
+  leaveType   LeaveType
+  startDate   DateTime
+  endDate     DateTime
+  status      LeaveStatus @default(PENDING)
+  reason      String?
+  approvedBy  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+enum LeaveType {
+  ANNUAL
+  SICK
+  PERSONAL
+  UNPAID
+  OTHER
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// Inventory & Stock Moves
+model Warehouse {
+  id         String      @id @default(cuid())
+  name       String
+  code       String      @unique
+  address    String?
+  city       String?
+  country    String?
+  companyId  String
+  company    Company     @relation(fields: [companyId], references: [id])
+  isActive   Boolean     @default(true)
+  stockMoves StockMove[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model StockMove {
+  id           String        @id @default(cuid())
+  productId    String
+  product      Product       @relation(fields: [productId], references: [id])
+  warehouseId  String
+  warehouse    Warehouse     @relation(fields: [warehouseId], references: [id])
+  moveType     StockMoveType
+  quantity     Int
+  reference    String?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+enum StockMoveType {
+  IN
+  OUT
+  TRANSFER
+  ADJUSTMENT
+}
+
+// Leads & Opportunities (CRM)
+model Lead {
+  id           String     @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  company      String?
+  source       LeadSource @default(OTHER)
+  status       LeadStatus @default(NEW)
+  customerId   String?
+  customer     Customer?  @relation(fields: [customerId], references: [id])
+  companyId    String
+  companyRef   Company    @relation(fields: [companyId], references: [id])
+  expectedValue Decimal?  @db.Decimal(10, 2)
+  probability   Int?      @default(0)
+  notes        String?
+  assignedTo   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum LeadSource {
+  WEBSITE
+  REFERRAL
+  SOCIAL_MEDIA
+  EMAIL_CAMPAIGN
+  COLD_CALL
+  TRADE_SHOW
+  OTHER
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
