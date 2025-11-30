@@ -106,8 +106,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if SKU already exists
-    const existingSku = await prisma.product.findUnique({ where: { sku } })
+    // Check if SKU already exists in the same company
+    const existingSku = await prisma.product.findFirst({
+      where: { 
+        sku,
+        companyId: payload.companyId,
+      },
+    })
     if (existingSku) {
       return NextResponse.json(
         { success: false, error: { message: 'A product with this SKU already exists' } },

@@ -4,6 +4,11 @@ const secret = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production'
 )
 
+// Validate JWT secret in production
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.warn('Warning: JWT_SECRET is not set. Using a default secret is not secure in production.')
+}
+
 export interface JWTPayload {
   userId: string
   email: string

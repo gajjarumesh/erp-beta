@@ -83,9 +83,15 @@ export function formatPercent(
 }
 
 export function parseNumber(value: string): number {
-  // Remove currency symbols, spaces, and replace comma with dot
-  const cleaned = value.replace(/[^0-9.-]/g, '')
-  return parseFloat(cleaned) || 0
+  // Remove currency symbols, spaces, and extra characters
+  // Keep only digits, a single decimal point, and minus sign
+  const cleaned = value.replace(/[^\d.\-]/g, '')
+  // Handle multiple decimal points by keeping only the first one
+  const parts = cleaned.split('.')
+  const result = parts.length > 1 
+    ? parts[0] + '.' + parts.slice(1).join('')
+    : cleaned
+  return parseFloat(result) || 0
 }
 
 export function roundToDecimal(value: number, decimals: number = 2): number {

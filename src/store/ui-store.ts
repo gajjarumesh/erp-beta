@@ -5,6 +5,19 @@ import { persist } from 'zustand/middleware'
 
 type Theme = 'light' | 'dark' | 'system'
 
+// Generate a UUID-compatible string that works in all environments
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback for older environments
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
 interface Notification {
   id: string
   title: string
@@ -63,7 +76,7 @@ export const useUIStore = create<UIState>()(
       setTheme: (theme) => set({ theme }),
 
       addNotification: (notification) => {
-        const id = crypto.randomUUID()
+        const id = generateId()
         const newNotification: Notification = {
           ...notification,
           id,
@@ -88,7 +101,7 @@ export const useUIStore = create<UIState>()(
       clearNotifications: () => set({ notifications: [] }),
 
       addToast: (toast) => {
-        const id = crypto.randomUUID()
+        const id = generateId()
         const newToast: Toast = { ...toast, id }
         set((state) => ({
           toasts: [...state.toasts, newToast],
