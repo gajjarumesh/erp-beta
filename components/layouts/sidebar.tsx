@@ -18,6 +18,12 @@ import {
   Building2,
   Grid3X3,
   Plus,
+  ShoppingBag,
+  Wallet,
+  DollarSign,
+  FolderKanban,
+  Globe,
+  BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +43,16 @@ const navigation: NavItem[] = [
     color: 'from-blue-500 to-blue-600'
   },
   {
+    name: 'CRM',
+    href: '/crm',
+    icon: UserCircle,
+    color: 'from-purple-500 to-purple-600',
+    subItems: [
+      { name: 'Overview', href: '/crm' },
+      { name: 'Leads', href: '/crm/leads' },
+    ],
+  },
+  {
     name: 'Sales',
     href: '/sales',
     icon: ShoppingCart,
@@ -46,6 +62,12 @@ const navigation: NavItem[] = [
       { name: 'Customers', href: '/sales/customers' },
       { name: 'Quotations', href: '/sales/quotations' },
     ],
+  },
+  {
+    name: 'Purchase',
+    href: '/purchase',
+    icon: ShoppingBag,
+    color: 'from-teal-500 to-teal-600',
   },
   {
     name: 'Inventory',
@@ -69,6 +91,12 @@ const navigation: NavItem[] = [
     ],
   },
   {
+    name: 'Expenses',
+    href: '/expenses',
+    icon: Wallet,
+    color: 'from-rose-500 to-rose-600',
+  },
+  {
     name: 'HR',
     href: '/hr',
     icon: Users,
@@ -80,14 +108,28 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    name: 'CRM',
-    href: '/crm',
-    icon: UserCircle,
-    color: 'from-purple-500 to-purple-600',
-    subItems: [
-      { name: 'Overview', href: '/crm' },
-      { name: 'Leads', href: '/crm/leads' },
-    ],
+    name: 'Payroll',
+    href: '/payroll',
+    icon: DollarSign,
+    color: 'from-amber-500 to-amber-600',
+  },
+  {
+    name: 'Projects',
+    href: '/projects',
+    icon: FolderKanban,
+    color: 'from-violet-500 to-violet-600',
+  },
+  {
+    name: 'Website',
+    href: '/website',
+    icon: Globe,
+    color: 'from-cyan-500 to-cyan-600',
+  },
+  {
+    name: 'Reports',
+    href: '/reports',
+    icon: BarChart3,
+    color: 'from-lime-500 to-lime-600',
   },
   { 
     name: 'Settings', 
