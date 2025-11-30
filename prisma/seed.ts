@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -9,6 +10,7 @@ async function main() {
   const company = await prisma.company.create({
     data: {
       name: 'Acme Corporation',
+      slug: 'acme-corporation',
       email: 'contact@acme.com',
       phone: '+1 800 123 4567',
       address: '123 Business Street, Suite 100',
@@ -19,19 +21,43 @@ async function main() {
   })
   console.log('✅ Created company:', company.name)
 
-  // Create Users
-  // NOTE: This is seed data for development/demo purposes only.
-  // In production, passwords should be properly hashed using bcrypt or similar.
+  // Create Users with hashed passwords
+  const hashedPassword = await bcrypt.hash('password123', 12)
+  
   const adminUser = await prisma.user.create({
     data: {
-      email: 'admin@acme.com',
+      email: 'admin@example.com',
       name: 'Admin User',
-      password: 'DEVELOPMENT_ONLY_CHANGE_IN_PRODUCTION', // Replace with proper hashed password in production
+      password: hashedPassword,
       role: 'ADMIN',
       companyId: company.id,
     },
   })
   console.log('✅ Created admin user:', adminUser.email)
+
+  // Create Manager user
+  const managerUser = await prisma.user.create({
+    data: {
+      email: 'manager@example.com',
+      name: 'Manager User',
+      password: hashedPassword,
+      role: 'MANAGER',
+      companyId: company.id,
+    },
+  })
+  console.log('✅ Created manager user:', managerUser.email)
+
+  // Create regular user
+  const regularUser = await prisma.user.create({
+    data: {
+      email: 'user@example.com',
+      name: 'Regular User',
+      password: hashedPassword,
+      role: 'USER',
+      companyId: company.id,
+    },
+  })
+  console.log('✅ Created regular user:', regularUser.email)
 
   // Create Departments
   const departments = await Promise.all([
@@ -55,10 +81,10 @@ async function main() {
 
   // Create Categories
   const categories = await Promise.all([
-    prisma.category.create({ data: { name: 'Electronics', description: 'Electronic devices and gadgets' } }),
-    prisma.category.create({ data: { name: 'Accessories', description: 'Device accessories' } }),
-    prisma.category.create({ data: { name: 'Wearables', description: 'Wearable technology' } }),
-    prisma.category.create({ data: { name: 'Software', description: 'Software licenses and subscriptions' } }),
+    prisma.category.create({ data: { name: 'Electronics', description: 'Electronic devices and gadgets', companyId: company.id } }),
+    prisma.category.create({ data: { name: 'Accessories', description: 'Device accessories', companyId: company.id } }),
+    prisma.category.create({ data: { name: 'Wearables', description: 'Wearable technology', companyId: company.id } }),
+    prisma.category.create({ data: { name: 'Software', description: 'Software licenses and subscriptions', companyId: company.id } }),
   ])
   console.log('✅ Created categories:', categories.length)
 
@@ -322,7 +348,193 @@ async function main() {
   ])
   console.log('✅ Created leads:', leads.length)
 
+  // Create Projects
+  const projects = await Promise.all([
+    prisma.project.create({
+      data: {
+        name: 'Website Redesign',
+        description: 'Complete redesign of the company website with modern UI',
+        status: 'IN_PROGRESS',
+        priority: 'HIGH',
+        startDate: new Date('2024-01-01'),
+        endDate: new Date('2024-06-30'),
+        budget: 50000,
+        progress: 45,
+        managerId: adminUser.id,
+        companyId: company.id,
+      },
+    }),
+    prisma.project.create({
+      data: {
+        name: 'Mobile App Development',
+        description: 'Native mobile app for iOS and Android',
+        status: 'PLANNING',
+        priority: 'MEDIUM',
+        startDate: new Date('2024-03-01'),
+        endDate: new Date('2024-12-31'),
+        budget: 100000,
+        progress: 10,
+        managerId: managerUser.id,
+        companyId: company.id,
+      },
+    }),
+    prisma.project.create({
+      data: {
+        name: 'ERP Integration',
+        description: 'Integration of third-party ERP system',
+        status: 'COMPLETED',
+        priority: 'URGENT',
+        startDate: new Date('2023-06-01'),
+        endDate: new Date('2023-12-15'),
+        budget: 75000,
+        progress: 100,
+        managerId: adminUser.id,
+        companyId: company.id,
+      },
+    }),
+  ])
+  console.log('✅ Created projects:', projects.length)
+
+  // Create Tasks
+  const tasks = await Promise.all([
+    prisma.task.create({
+      data: {
+        title: 'Design homepage mockups',
+        description: 'Create wireframes and mockups for new homepage',
+        status: 'DONE',
+        priority: 'HIGH',
+        projectId: projects[0].id,
+        assigneeId: adminUser.id,
+        dueDate: new Date('2024-02-15'),
+        estimatedHours: 20,
+        actualHours: 18,
+        companyId: company.id,
+      },
+    }),
+    prisma.task.create({
+      data: {
+        title: 'Implement responsive navigation',
+        description: 'Build responsive navigation component',
+        status: 'IN_PROGRESS',
+        priority: 'MEDIUM',
+        projectId: projects[0].id,
+        assigneeId: managerUser.id,
+        dueDate: new Date('2024-03-01'),
+        estimatedHours: 16,
+        actualHours: 8,
+        companyId: company.id,
+      },
+    }),
+    prisma.task.create({
+      data: {
+        title: 'Set up CI/CD pipeline',
+        description: 'Configure continuous integration and deployment',
+        status: 'TODO',
+        priority: 'HIGH',
+        projectId: projects[1].id,
+        dueDate: new Date('2024-04-01'),
+        estimatedHours: 12,
+        companyId: company.id,
+      },
+    }),
+    prisma.task.create({
+      data: {
+        title: 'API Documentation',
+        description: 'Write comprehensive API documentation',
+        status: 'IN_REVIEW',
+        priority: 'LOW',
+        projectId: projects[0].id,
+        assigneeId: regularUser.id,
+        dueDate: new Date('2024-03-15'),
+        estimatedHours: 8,
+        actualHours: 6,
+        companyId: company.id,
+      },
+    }),
+  ])
+  console.log('✅ Created tasks:', tasks.length)
+
+  // Create additional Sales Orders
+  const order2 = await prisma.salesOrder.create({
+    data: {
+      orderNumber: 'SO-2024-002',
+      customerId: customers[1].id,
+      companyId: company.id,
+      status: 'CONFIRMED',
+      subtotal: 3196.00,
+      tax: 256.00,
+      total: 3452.00,
+      orderLines: {
+        create: [
+          {
+            productId: products[1].id,
+            quantity: 2,
+            unitPrice: 1099.00,
+            subtotal: 2198.00,
+          },
+          {
+            productId: products[2].id,
+            quantity: 1,
+            unitPrice: 599.00,
+            subtotal: 599.00,
+          },
+          {
+            productId: products[3].id,
+            quantity: 2,
+            unitPrice: 249.00,
+            subtotal: 498.00,
+          },
+        ],
+      },
+    },
+  })
+  console.log('✅ Created additional sales order:', order2.orderNumber)
+
+  // Create Vendor
+  const vendor = await prisma.vendor.create({
+    data: {
+      name: 'Apple Inc.',
+      email: 'wholesale@apple.com',
+      phone: '+1 800 275 2273',
+      address: 'One Apple Park Way',
+      city: 'Cupertino',
+      country: 'United States',
+      companyId: company.id,
+    },
+  })
+  console.log('✅ Created vendor:', vendor.name)
+
+  // Create Stock Moves
+  const stockMoves = await Promise.all([
+    prisma.stockMove.create({
+      data: {
+        productId: products[0].id,
+        warehouseId: warehouse.id,
+        moveType: 'IN',
+        quantity: 50,
+        reference: 'PO-2024-001',
+        notes: 'Initial stock receipt',
+      },
+    }),
+    prisma.stockMove.create({
+      data: {
+        productId: products[0].id,
+        warehouseId: warehouse.id,
+        moveType: 'OUT',
+        quantity: 5,
+        reference: 'SO-2024-001',
+        notes: 'Sales order fulfillment',
+      },
+    }),
+  ])
+  console.log('✅ Created stock moves:', stockMoves.length)
+
   console.log('🎉 Seed completed successfully!')
+  console.log('')
+  console.log('📝 Demo Credentials:')
+  console.log('   Admin: admin@example.com / password123')
+  console.log('   Manager: manager@example.com / password123')
+  console.log('   User: user@example.com / password123')
 }
 
 main()
