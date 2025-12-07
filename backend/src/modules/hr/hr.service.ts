@@ -410,7 +410,12 @@ export class HrService {
   // ===========================
 
   async generatePayroll(tenantId: string, dto: GeneratePayrollDto, userId: string): Promise<Payslip[]> {
-    // Parse period (YYYY-MM)
+    // Parse and validate period (YYYY-MM)
+    const periodRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
+    if (!periodRegex.test(dto.period)) {
+      throw new BadRequestException('Invalid period format. Expected YYYY-MM (e.g., 2024-12)');
+    }
+
     const [year, month] = dto.period.split('-').map(Number);
     const periodStart = new Date(year, month - 1, 1);
     const periodEnd = new Date(year, month, 0);

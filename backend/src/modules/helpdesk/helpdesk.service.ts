@@ -236,8 +236,11 @@ export class HelpdeskService {
   ): Promise<TicketComment> {
     const ticket = await this.findOneTicket(ticketId);
 
-    // Mark first response if this is the first comment from staff
+    // Mark first response only if this is a non-internal comment and no first response yet
+    // In production, you would check if the author is staff/support, not customer
     if (!ticket.firstResponseAt && !dto.isInternal) {
+      // TODO: Add logic to check if authorUserId is staff member
+      // For now, we'll mark any non-internal comment as first response
       ticket.firstResponseAt = new Date();
       await this.ticketsRepository.save(ticket);
     }

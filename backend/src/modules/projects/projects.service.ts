@@ -21,6 +21,8 @@ import {
 
 @Injectable()
 export class ProjectsService {
+  private readonly MAX_HOURS_PER_DAY = 24; // Can be moved to settings service in production
+
   constructor(
     @InjectRepository(Project)
     private projectsRepository: Repository<Project>,
@@ -184,7 +186,7 @@ export class ProjectsService {
     }
 
     // Check max hours per day (from settings - simplified here)
-    const maxHoursPerDay = 24; // In production, get from settings
+    const maxHoursPerDay = this.MAX_HOURS_PER_DAY;
     
     // Check existing hours for the day
     const existingTimesheets = await this.timesheetsRepository.find({
@@ -251,6 +253,29 @@ export class ProjectsService {
 
   async updateTimesheet(id: string, dto: UpdateTimesheetDto): Promise<Timesheet> {
     const timesheet = await this.findOneTimesheet(id);
+    
+    // If hours are being updated, validate max hours per day
+    if (dto.hours !== undefined) {
+      const maxHoursPerDay = this.MAX_HOURS_PER_DAY;
+      
+      // Get existing hours for the day, excluding the current timesheet
+      const existingTimesheets = await this.timesheetsRepository.find({
+        where: {
+          employeeId: timesheet.employeeId,
+          date: dto.date || timesheet.date,
+          deletedAt: IsNull(),
+        },
+      });
+
+      const totalHours = existingTimesheets
+        .filter(ts => ts.id !== id)
+        .reduce((sum, ts) => sum + Number(ts.hours), 0);
+      
+      if (totalHours + dto.hours > maxHoursPerDay) {
+        throw new BadRequestException(`Total hours for the day would exceed ${maxHoursPerDay} hours`);
+      }
+    }
+    
     Object.assign(timesheet, dto);
     return this.timesheetsRepository.save(timesheet);
   }
