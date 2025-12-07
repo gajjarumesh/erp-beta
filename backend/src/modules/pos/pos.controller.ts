@@ -27,7 +27,7 @@ export class PosController {
   @RequirePermissions('pos:create')
   @ApiOperation({ summary: 'Open a new POS session' })
   @ApiResponse({ status: 201, description: 'Session opened successfully' })
-  async createSession(@Body() createDto: CreatePosSessionDto, @Request() req) {
+  async createSession(@Body() createDto: CreatePosSessionDto, @Request() req: any) {
     return this.posSessionsService.create(createDto, req.user.id);
   }
 
@@ -43,7 +43,7 @@ export class PosController {
   @RequirePermissions('pos:read')
   @ApiOperation({ summary: 'Get current open session for the user' })
   @ApiResponse({ status: 200, description: 'Current open session' })
-  async getCurrentSession(@Request() req) {
+  async getCurrentSession(@Request() req: any) {
     return this.posSessionsService.getCurrentSession(req.user.id);
   }
 
@@ -62,7 +62,7 @@ export class PosController {
   async closeSession(
     @Param('id') id: string,
     @Body() closeDto: ClosePosSessionDto,
-    @Request() req,
+    @Request() req: any,
   ) {
     return this.posSessionsService.closeSession(id, closeDto, req.user.id);
   }
