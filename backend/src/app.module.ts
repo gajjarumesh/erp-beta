@@ -23,6 +23,7 @@ import { UsersModule } from './modules/users/users.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { CrmModule } from './modules/crm/crm.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { CrmModule } from './modules/crm/crm.module';
     SettingsModule,
     AuditModule,
     CrmModule,
+    ProductsModule,
   ],
   providers: [
     // Global guards
