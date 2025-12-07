@@ -40,7 +40,7 @@ export class ProjectsController {
   @Post()
   @ApiOperation({ summary: 'Create project' })
   @RequirePermissions('projects:project:create')
-  async createProject(@Request() req, @Body() dto: CreateProjectDto) {
+  async createProject(@Request() req: any, @Body() dto: CreateProjectDto) {
     return this.projectsService.createProject(req.user.tenantId, dto);
   }
 
@@ -48,7 +48,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Get all projects' })
   @RequirePermissions('projects:project:read')
   async findAllProjects(
-    @Request() req,
+    @Request() req: any,
     @Query('status') status?: ProjectStatus,
   ) {
     return this.projectsService.findAllProjects(req.user.tenantId, status);
@@ -83,7 +83,7 @@ export class ProjectsController {
   @Post('tasks')
   @ApiOperation({ summary: 'Create task' })
   @RequirePermissions('projects:task:create')
-  async createTask(@Request() req, @Body() dto: CreateTaskDto) {
+  async createTask(@Request() req: any, @Body() dto: CreateTaskDto) {
     return this.projectsService.createTask(req.user.tenantId, dto);
   }
 
@@ -91,7 +91,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Get all tasks' })
   @RequirePermissions('projects:task:read')
   async findAllTasks(
-    @Request() req,
+    @Request() req: any,
     @Query('projectId') projectId?: string,
     @Query('status') status?: TaskStatus,
   ) {
@@ -128,7 +128,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Add comment to task' })
   @RequirePermissions('projects:task:update')
   async createTaskComment(
-    @Request() req,
+    @Request() req: any,
     @Param('taskId') taskId: string,
     @Body() dto: CreateTaskCommentDto,
   ) {
@@ -154,7 +154,7 @@ export class ProjectsController {
   @Post('timesheets')
   @ApiOperation({ summary: 'Create timesheet entry' })
   @RequirePermissions('projects:timesheet:create')
-  async createTimesheet(@Request() req, @Body() dto: CreateTimesheetDto) {
+  async createTimesheet(@Request() req: any, @Body() dto: CreateTimesheetDto) {
     return this.projectsService.createTimesheet(req.user.tenantId, dto);
   }
 
@@ -162,7 +162,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Get all timesheets' })
   @RequirePermissions('projects:timesheet:read')
   async findAllTimesheets(
-    @Request() req,
+    @Request() req: any,
     @Query('employeeId') employeeId?: string,
     @Query('projectId') projectId?: string,
     @Query('startDate') startDate?: Date,

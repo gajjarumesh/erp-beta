@@ -46,14 +46,14 @@ export class HrController {
   @Post('employees')
   @ApiOperation({ summary: 'Create employee' })
   @RequirePermissions('hr:employee:create')
-  async createEmployee(@Request() req, @Body() dto: CreateEmployeeDto) {
+  async createEmployee(@Request() req: any, @Body() dto: CreateEmployeeDto) {
     return this.hrService.createEmployee(req.user.tenantId, dto);
   }
 
   @Get('employees')
   @ApiOperation({ summary: 'Get all employees' })
   @RequirePermissions('hr:employee:read')
-  async findAllEmployees(@Request() req) {
+  async findAllEmployees(@Request() req: any) {
     return this.hrService.findAllEmployees(req.user.tenantId);
   }
 
@@ -86,7 +86,7 @@ export class HrController {
   @Post('attendance/clock-in')
   @ApiOperation({ summary: 'Clock in' })
   @RequirePermissions('hr:attendance:create')
-  async clockIn(@Request() req, @Body() dto: ClockInDto) {
+  async clockIn(@Request() req: any, @Body() dto: ClockInDto) {
     // In a real app, get employeeId from the logged-in user
     // For now, assuming the request has employeeId
     const employeeId = req.body.employeeId || req.user.employeeId;
@@ -96,7 +96,7 @@ export class HrController {
   @Post('attendance/clock-out')
   @ApiOperation({ summary: 'Clock out' })
   @RequirePermissions('hr:attendance:create')
-  async clockOut(@Request() req, @Body() dto: ClockOutDto) {
+  async clockOut(@Request() req: any, @Body() dto: ClockOutDto) {
     const employeeId = req.body.employeeId || req.user.employeeId;
     return this.hrService.clockOut(employeeId, dto);
   }
@@ -119,7 +119,7 @@ export class HrController {
   @Post('leave-requests')
   @ApiOperation({ summary: 'Create leave request' })
   @RequirePermissions('hr:leave:create')
-  async createLeaveRequest(@Request() req, @Body() dto: CreateLeaveRequestDto) {
+  async createLeaveRequest(@Request() req: any, @Body() dto: CreateLeaveRequestDto) {
     const employeeId = req.body.employeeId || req.user.employeeId;
     return this.hrService.createLeaveRequest(employeeId, req.user.tenantId, dto);
   }
@@ -128,7 +128,7 @@ export class HrController {
   @ApiOperation({ summary: 'Get all leave requests' })
   @RequirePermissions('hr:leave:read')
   async findAllLeaveRequests(
-    @Request() req,
+    @Request() req: any,
     @Query('status') status?: LeaveStatus,
   ) {
     return this.hrService.findAllLeaveRequests(req.user.tenantId, status);
@@ -155,7 +155,7 @@ export class HrController {
   @ApiOperation({ summary: 'Approve leave request' })
   @RequirePermissions('hr:leave:approve')
   async approveLeaveRequest(
-    @Request() req,
+    @Request() req: any,
     @Param('id') id: string,
     @Body() dto: ApproveLeaveRequestDto,
   ) {
@@ -166,7 +166,7 @@ export class HrController {
   @ApiOperation({ summary: 'Reject leave request' })
   @RequirePermissions('hr:leave:approve')
   async rejectLeaveRequest(
-    @Request() req,
+    @Request() req: any,
     @Param('id') id: string,
     @Body() dto: RejectLeaveRequestDto,
   ) {
@@ -180,7 +180,7 @@ export class HrController {
   @Post('expense-claims')
   @ApiOperation({ summary: 'Create expense claim' })
   @RequirePermissions('hr:expense:create')
-  async createExpenseClaim(@Request() req, @Body() dto: CreateExpenseClaimDto) {
+  async createExpenseClaim(@Request() req: any, @Body() dto: CreateExpenseClaimDto) {
     const employeeId = req.body.employeeId || req.user.employeeId;
     return this.hrService.createExpenseClaim(employeeId, req.user.tenantId, dto);
   }
@@ -189,7 +189,7 @@ export class HrController {
   @ApiOperation({ summary: 'Get all expense claims' })
   @RequirePermissions('hr:expense:read')
   async findAllExpenseClaims(
-    @Request() req,
+    @Request() req: any,
     @Query('status') status?: ExpenseStatus,
   ) {
     return this.hrService.findAllExpenseClaims(req.user.tenantId, status);
@@ -222,14 +222,14 @@ export class HrController {
   @Post('expense-claims/:id/approve')
   @ApiOperation({ summary: 'Approve expense claim' })
   @RequirePermissions('hr:expense:approve')
-  async approveExpenseClaim(@Request() req, @Param('id') id: string) {
+  async approveExpenseClaim(@Request() req: any, @Param('id') id: string) {
     return this.hrService.approveExpenseClaim(id, req.user.id);
   }
 
   @Post('expense-claims/:id/reject')
   @ApiOperation({ summary: 'Reject expense claim' })
   @RequirePermissions('hr:expense:approve')
-  async rejectExpenseClaim(@Request() req, @Param('id') id: string) {
+  async rejectExpenseClaim(@Request() req: any, @Param('id') id: string) {
     return this.hrService.rejectExpenseClaim(id, req.user.id);
   }
 
@@ -247,7 +247,7 @@ export class HrController {
   @Post('payroll-configs')
   @ApiOperation({ summary: 'Create payroll config' })
   @RequirePermissions('hr:payroll:create')
-  async createPayrollConfig(@Request() req, @Body() dto: CreatePayrollConfigDto) {
+  async createPayrollConfig(@Request() req: any, @Body() dto: CreatePayrollConfigDto) {
     return this.hrService.createPayrollConfig(req.user.tenantId, dto);
   }
 
@@ -255,7 +255,7 @@ export class HrController {
   @ApiOperation({ summary: 'Get all payroll configs' })
   @RequirePermissions('hr:payroll:read')
   async findAllPayrollConfigs(
-    @Request() req,
+    @Request() req: any,
     @Query('employeeId') employeeId?: string,
   ) {
     return this.hrService.findAllPayrollConfigs(req.user.tenantId, employeeId);
@@ -285,7 +285,7 @@ export class HrController {
   @Post('payroll/run')
   @ApiOperation({ summary: 'Generate payslips for period' })
   @RequirePermissions('hr:payroll:create')
-  async generatePayroll(@Request() req, @Body() dto: GeneratePayrollDto) {
+  async generatePayroll(@Request() req: any, @Body() dto: GeneratePayrollDto) {
     return this.hrService.generatePayroll(req.user.tenantId, dto, req.user.id);
   }
 
@@ -293,7 +293,7 @@ export class HrController {
   @ApiOperation({ summary: 'Get all payslips' })
   @RequirePermissions('hr:payroll:read')
   async findAllPayslips(
-    @Request() req,
+    @Request() req: any,
     @Query('employeeId') employeeId?: string,
   ) {
     return this.hrService.findAllPayslips(req.user.tenantId, employeeId);

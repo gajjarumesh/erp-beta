@@ -228,7 +228,9 @@ export class HrService {
     leaveRequest.status = LeaveStatus.APPROVED;
     leaveRequest.approverId = approverId;
     leaveRequest.approvedAt = new Date();
-    leaveRequest.approverNotes = dto.approverNotes;
+    if (dto.approverNotes) {
+      leaveRequest.approverNotes = dto.approverNotes;
+    }
 
     return this.leaveRequestsRepository.save(leaveRequest);
   }

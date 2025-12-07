@@ -39,14 +39,14 @@ export class HelpdeskController {
   @Post('sla-rules')
   @ApiOperation({ summary: 'Create SLA rule' })
   @RequirePermissions('helpdesk:sla:create')
-  async createSlaRule(@Request() req, @Body() dto: CreateSlaRuleDto) {
+  async createSlaRule(@Request() req: any, @Body() dto: CreateSlaRuleDto) {
     return this.helpdeskService.createSlaRule(req.user.tenantId, dto);
   }
 
   @Get('sla-rules')
   @ApiOperation({ summary: 'Get all SLA rules' })
   @RequirePermissions('helpdesk:sla:read')
-  async findAllSlaRules(@Request() req) {
+  async findAllSlaRules(@Request() req: any) {
     return this.helpdeskService.findAllSlaRules(req.user.tenantId);
   }
 
@@ -79,7 +79,7 @@ export class HelpdeskController {
   @Post('tickets')
   @ApiOperation({ summary: 'Create ticket' })
   @RequirePermissions('helpdesk:ticket:create')
-  async createTicket(@Request() req, @Body() dto: CreateTicketDto) {
+  async createTicket(@Request() req: any, @Body() dto: CreateTicketDto) {
     return this.helpdeskService.createTicket(req.user.tenantId, dto);
   }
 
@@ -87,7 +87,7 @@ export class HelpdeskController {
   @ApiOperation({ summary: 'Get all tickets with filters' })
   @RequirePermissions('helpdesk:ticket:read')
   async findAllTickets(
-    @Request() req,
+    @Request() req: any,
     @Query('status') status?: TicketStatus,
     @Query('priority') priority?: TicketPriority,
     @Query('assigneeUserId') assigneeUserId?: string,
@@ -153,7 +153,7 @@ export class HelpdeskController {
   @ApiOperation({ summary: 'Add comment to ticket' })
   @RequirePermissions('helpdesk:ticket:update')
   async createTicketComment(
-    @Request() req,
+    @Request() req: any,
     @Param('ticketId') ticketId: string,
     @Body() dto: CreateTicketCommentDto,
   ) {
