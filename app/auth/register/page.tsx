@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
@@ -10,42 +11,89 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Github,
-  Chrome,
   User,
   Building,
   Check,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react'
+import { useAuthStore } from '@/lib/stores/auth-store'
+import { PackageBuilder } from '@/components/packages/package-builder'
+import { usePackageBuilderStore } from '@/lib/stores/package-builder-store'
+import { apiClient } from '@/lib/api-client'
 
-const plans = [
-  { id: 'free', name: 'Free', price: '$0', description: '1 app, 2 users' },
-  { id: 'starter', name: 'Starter', price: '$29', description: '3 apps, 10 users' },
-  { id: 'professional', name: 'Professional', price: '$59', description: 'All apps, 50 users', popular: true },
-]
+type AccountType = 'individual' | 'company'
 
 export default function RegisterPage() {
+  const router = useRouter()
+  const { isLoading: authLoading, error: authError, clearError } = useAuthStore()
+  
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState(1)
+  const [accountType, setAccountType] = useState<AccountType>('individual')
+  const [packageId, setPackageId] = useState<string | null>(null)
+  const [calculatedPrice, setCalculatedPrice] = useState(0)
+  const [localError, setLocalError] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     company: '',
-    plan: 'free',
     terms: false,
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (step === 1) {
-      setStep(2)
-      return
+    clearError()
+    setLocalError('')
+    setStep(2)
+  }
+
+  const handleStep2Submit = () => {
+    setStep(3)
+  }
+
+  const handleStep3Submit = async () => {
+    clearError()
+    setLocalError('')
+
+    try {
+      // Step 1: Create tenant
+      const tenantSlug = formData.company
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+
+      const tenantResponse = await apiClient.tenants.onboard({
+        name: formData.company || formData.name,
+        slug: tenantSlug,
+        adminEmail: formData.email,
+        adminName: formData.name,
+        adminPassword: formData.password,
+      })
+
+      if (!tenantResponse.data) {
+        throw new Error('Failed to create tenant')
+      }
+
+      const tenantId = tenantResponse.data.tenant.id
+
+      // Step 2: Create package if one was built
+      if (packageId) {
+        // Activate the package (would normally redirect to payment)
+        await apiClient.packages.activatePackage(packageId)
+      }
+
+      setStep(4) // Show success/payment step
+    } catch (err) {
+      setLocalError(
+        err instanceof Error ? err.message : 'Registration failed. Please try again.'
+      )
     }
-    setIsLoading(true)
-    // Simulate registration
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    window.location.href = '/dashboard'
+  }
+
+  const handlePackageCreated = (id: string) => {
+    setPackageId(id)
   }
 
   return (
@@ -55,7 +103,7 @@ export default function RegisterPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md py-8"
+          className="w-full max-w-4xl py-8"
         >
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 mb-8">
@@ -66,187 +114,287 @@ export default function RegisterPage() {
           </Link>
 
           {/* Progress Steps */}
-          <div className="flex items-center gap-4 mb-8">
-            <div className={`flex items-center gap-2 ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                {step > 1 ? <Check className="h-5 w-5" /> : '1'}
+          <div className="flex items-center gap-4 mb-8 max-w-2xl">
+            {[
+              { num: 1, label: 'Account' },
+              { num: 2, label: 'Type' },
+              { num: 3, label: 'Package' },
+              { num: 4, label: 'Confirm' },
+            ].map((s, index) => (
+              <div key={s.num} className="flex items-center flex-1">
+                <div
+                  className={`flex items-center gap-2 ${
+                    step >= s.num ? 'text-blue-600' : 'text-gray-400'
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      step >= s.num
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                  >
+                    {step > s.num ? <Check className="h-5 w-5" /> : s.num}
+                  </div>
+                  <span className="text-sm font-medium hidden sm:inline">{s.label}</span>
+                </div>
+                {index < 3 && (
+                  <div className="flex-1 h-0.5 bg-gray-200 dark:bg-gray-700 mx-2">
+                    <div
+                      className={`h-full bg-blue-600 transition-all ${
+                        step > s.num ? 'w-full' : 'w-0'
+                      }`}
+                    />
+                  </div>
+                )}
               </div>
-              <span className="text-sm font-medium">Account</span>
-            </div>
-            <div className="flex-1 h-0.5 bg-gray-200 dark:bg-gray-700">
-              <div className={`h-full bg-blue-600 transition-all ${step > 1 ? 'w-full' : 'w-0'}`} />
-            </div>
-            <div className={`flex items-center gap-2 ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`}>
-                2
-              </div>
-              <span className="text-sm font-medium">Plan</span>
-            </div>
+            ))}
           </div>
 
+          {/* Error Message */}
+          {(authError || localError) && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-start gap-3 max-w-2xl"
+            >
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {localError || authError}
+              </p>
+            </motion.div>
+          )}
+
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {step === 1 ? 'Create your account' : 'Choose your plan'}
+            {step === 1 && 'Create your account'}
+            {step === 2 && 'Choose account type'}
+            {step === 3 && 'Build your package'}
+            {step === 4 && 'Review & Confirm'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8">
-            {step === 1 ? 'Start your 14-day free trial. No credit card required.' : 'Select the plan that best fits your needs.'}
+            {step === 1 && 'Start your 14-day free trial. No credit card required.'}
+            {step === 2 && 'Select the account type that best fits your needs.'}
+            {step === 3 && 'Customize your package with the modules you need.'}
+            {step === 4 && 'Review your selections and complete registration.'}
           </p>
 
-          {step === 1 ? (
-            <>
-              {/* Social Login */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <button className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
-                  <Chrome className="h-5 w-5" />
-                  <span>Google</span>
-                </button>
-                <button className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
-                  <Github className="h-5 w-5" />
-                  <span>GitHub</span>
-                </button>
-              </div>
-
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white dark:bg-gray-900 text-gray-500">Or continue with</span>
+          {/* Step 1: Account Details */}
+          {step === 1 && (
+            <form onSubmit={handleStep1Submit} className="space-y-5 max-w-2xl">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="John Doe"
+                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
               </div>
 
-              {/* Form Step 1 */}
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="John Doe"
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Work Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="you@company.com"
+                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Work Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="you@company.com"
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="Create a strong password"
+                    className="w-full pl-10 pr-12 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
+                <p className="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Company Name
-                  </label>
-                  <div className="relative">
-                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30"
+              >
+                Continue
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </form>
+          )}
+
+          {/* Step 2: Account Type Selection */}
+          {step === 2 && (
+            <div className="space-y-6 max-w-2xl">
+              <div className="space-y-4">
+                <label
+                  className={`block p-6 rounded-xl border-2 cursor-pointer transition-all ${
+                    accountType === 'individual'
+                      ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
                     <input
-                      type="text"
-                      required
-                      value={formData.company}
-                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      placeholder="Acme Inc"
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      type="radio"
+                      name="accountType"
+                      value="individual"
+                      checked={accountType === 'individual'}
+                      onChange={(e) => setAccountType(e.target.value as AccountType)}
+                      className="w-5 h-5 mt-1 text-blue-600"
                     />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span className="font-semibold text-gray-900 dark:text-white text-lg">
+                          Individual
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        For personal use or freelancers. Instant activation after payment.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </label>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <label
+                  className={`block p-6 rounded-xl border-2 cursor-pointer transition-all ${
+                    accountType === 'company'
+                      ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
                     <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      minLength={8}
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      placeholder="Create a strong password"
-                      className="w-full pl-10 pr-12 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      type="radio"
+                      name="accountType"
+                      value="company"
+                      checked={accountType === 'company'}
+                      onChange={(e) => setAccountType(e.target.value as AccountType)}
+                      className="w-5 h-5 mt-1 text-blue-600"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Building className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span className="font-semibold text-gray-900 dark:text-white text-lg">
+                          Company
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        For businesses and organizations. Requires verification before
+                        activation.
+                      </p>
+                      {accountType === 'company' && (
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Company Name
+                          </label>
+                          <input
+                            type="text"
+                            required={accountType === 'company'}
+                            value={formData.company}
+                            onChange={(e) =>
+                              setFormData({ ...formData, company: e.target.value })
+                            }
+                            placeholder="Acme Inc"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
-                </div>
+                </label>
+              </div>
 
+              <div className="flex gap-4">
                 <button
-                  type="submit"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30"
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStep2Submit}
+                  disabled={accountType === 'company' && !formData.company}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continue
                   <ArrowRight className="h-5 w-5" />
                 </button>
-              </form>
-            </>
-          ) : (
-            /* Form Step 2 - Plan Selection */
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-4">
-                {plans.map((plan) => (
-                  <label
-                    key={plan.id}
-                    className={`block p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      formData.plan === plan.id
-                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          name="plan"
-                          value={plan.id}
-                          checked={formData.plan === plan.id}
-                          onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
-                          className="w-4 h-4 text-blue-600"
-                        />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-gray-900 dark:text-white">{plan.name}</span>
-                            {plan.popular && (
-                              <span className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-xs font-medium">
-                                Popular
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{plan.description}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xl font-bold text-gray-900 dark:text-white">{plan.price}</span>
-                        {plan.price !== '$0' && <span className="text-sm text-gray-500">/mo</span>}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Package Builder */}
+          {step === 3 && (
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <PackageBuilder
+                  onPriceCalculated={setCalculatedPrice}
+                  onPackageCreated={handlePackageCreated}
+                  showCreateButton={false}
+                />
               </div>
 
-              <div className="flex items-start gap-2">
+              <div className="flex gap-4 max-w-2xl">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStep3Submit}
+                  disabled={authLoading}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {authLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      Complete Registration
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="flex items-start gap-2 max-w-2xl">
                 <input
                   type="checkbox"
                   id="terms"
@@ -266,36 +414,49 @@ export default function RegisterPage() {
                   </Link>
                 </label>
               </div>
+            </div>
+          )}
 
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      Create Account
-                      <ArrowRight className="h-5 w-5" />
-                    </>
-                  )}
-                </button>
+          {/* Step 4: Success */}
+          {step === 4 && (
+            <div className="text-center py-12 max-w-2xl mx-auto">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
               </div>
-            </form>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                {accountType === 'company'
+                  ? 'Registration Submitted!'
+                  : 'Account Created Successfully!'}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-8">
+                {accountType === 'company' ? (
+                  <>
+                    Your company registration is pending verification. You'll receive an email
+                    once your account is activated. This typically takes 1-2 business days.
+                  </>
+                ) : (
+                  <>
+                    Your account has been created. You can now sign in and start using
+                    NexusERP.
+                  </>
+                )}
+              </p>
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30"
+              >
+                Go to Sign In
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
           )}
 
           <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+            <Link
+              href="/auth/login"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            >
               Sign in
             </Link>
           </p>
@@ -314,9 +475,9 @@ export default function RegisterPage() {
           <h2 className="text-3xl font-bold mb-6">Everything you need to run your business</h2>
           <ul className="space-y-4">
             {[
-              'Choose only the apps you need',
+              'Choose only the modules you need',
+              'Pay yearly with transparent pricing',
               'Scale seamlessly as you grow',
-              'No long-term contracts',
               '14-day free trial on all plans',
               'World-class support team',
             ].map((item, index) => (
@@ -334,20 +495,6 @@ export default function RegisterPage() {
               </motion.li>
             ))}
           </ul>
-          <div className="mt-12 p-6 rounded-xl bg-white/10 backdrop-blur-lg">
-            <p className="text-lg italic mb-4">
-              &quot;NexusERP helped us streamline operations and save 20 hours per week. The modular approach meant we only pay for what we use.&quot;
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-medium">
-                JD
-              </div>
-              <div>
-                <div className="font-medium">Jane Doe</div>
-                <div className="text-sm text-white/70">CEO, TechCorp</div>
-              </div>
-            </div>
-          </div>
         </motion.div>
       </div>
     </div>
