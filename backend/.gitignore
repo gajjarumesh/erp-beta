@@ -1,0 +1,30 @@
+# Backend build artifacts
+dist
+node_modules
+*.log
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Testing
+coverage
+.nyc_output
+
+# TypeORM
+ormconfig.json
