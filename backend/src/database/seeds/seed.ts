@@ -110,6 +110,50 @@ async function seed() {
       { code: 'accounting:tax:update', description: 'Update tax rules' },
       { code: 'accounting:tax:delete', description: 'Delete tax rules' },
       { code: 'accounting:report:read', description: 'View financial reports' },
+
+      // HR permissions
+      { code: 'hr:employee:read', description: 'View employees' },
+      { code: 'hr:employee:create', description: 'Create employees' },
+      { code: 'hr:employee:update', description: 'Update employees' },
+      { code: 'hr:employee:delete', description: 'Delete employees' },
+      { code: 'hr:attendance:read', description: 'View attendance logs' },
+      { code: 'hr:attendance:create', description: 'Clock in/out' },
+      { code: 'hr:leave:read', description: 'View leave requests' },
+      { code: 'hr:leave:create', description: 'Create leave requests' },
+      { code: 'hr:leave:update', description: 'Update leave requests' },
+      { code: 'hr:leave:approve', description: 'Approve/reject leave requests' },
+      { code: 'hr:expense:read', description: 'View expense claims' },
+      { code: 'hr:expense:create', description: 'Create expense claims' },
+      { code: 'hr:expense:update', description: 'Update expense claims' },
+      { code: 'hr:expense:approve', description: 'Approve/reject expense claims' },
+      { code: 'hr:payroll:read', description: 'View payroll configs and payslips' },
+      { code: 'hr:payroll:create', description: 'Create payroll configs' },
+      { code: 'hr:payroll:update', description: 'Update payroll configs' },
+
+      // Projects permissions
+      { code: 'projects:project:read', description: 'View projects' },
+      { code: 'projects:project:create', description: 'Create projects' },
+      { code: 'projects:project:update', description: 'Update projects' },
+      { code: 'projects:project:delete', description: 'Delete projects' },
+      { code: 'projects:task:read', description: 'View tasks' },
+      { code: 'projects:task:create', description: 'Create tasks' },
+      { code: 'projects:task:update', description: 'Update tasks' },
+      { code: 'projects:task:delete', description: 'Delete tasks' },
+      { code: 'projects:timesheet:read', description: 'View timesheets' },
+      { code: 'projects:timesheet:create', description: 'Create timesheets' },
+      { code: 'projects:timesheet:update', description: 'Update timesheets' },
+      { code: 'projects:timesheet:delete', description: 'Delete timesheets' },
+
+      // Helpdesk permissions
+      { code: 'helpdesk:ticket:read', description: 'View tickets' },
+      { code: 'helpdesk:ticket:create', description: 'Create tickets' },
+      { code: 'helpdesk:ticket:update', description: 'Update tickets' },
+      { code: 'helpdesk:ticket:delete', description: 'Delete tickets' },
+      { code: 'helpdesk:ticket:assign', description: 'Assign tickets' },
+      { code: 'helpdesk:sla:read', description: 'View SLA rules' },
+      { code: 'helpdesk:sla:create', description: 'Create SLA rules' },
+      { code: 'helpdesk:sla:update', description: 'Update SLA rules' },
+      { code: 'helpdesk:sla:delete', description: 'Delete SLA rules' },
     ];
 
     for (const permission of permissions) {
