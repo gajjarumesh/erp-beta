@@ -52,7 +52,7 @@ export class Lead {
   @Column({ type: 'uuid', nullable: true })
   ownerUserId: string;
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
   tags: string[];
 
   @Column({ type: 'text', nullable: true })

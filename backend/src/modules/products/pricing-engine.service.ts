@@ -103,14 +103,22 @@ export class PricingEngineService {
 
   private evaluateFormula(formula: string, currentPrice: number, context: PricingContext): number {
     try {
-      // Simple variable replacement (in production, use a proper expression evaluator)
-      const replaced = formula
+      // SECURITY NOTE: For production, use a safe expression evaluator library like 'mathjs'
+      // This simplified implementation should be replaced with a proper parser
+      
+      // Only allow simple mathematical operations and predefined variables
+      const sanitized = formula
+        .replace(/[^0-9+\-*/()\s.]/g, '') // Remove any non-mathematical characters
         .replace(/\{price\}/g, currentPrice.toString())
         .replace(/\{qty\}/g, context.quantity.toString());
       
-      // Use Function constructor safely (consider using a library like mathjs in production)
-      const result = new Function('return ' + replaced)();
-      return typeof result === 'number' ? result : 0;
+      // Very basic validation - for production use mathjs or similar
+      if (sanitized.length > 100 || /[a-zA-Z_$]/.test(sanitized)) {
+        return 0; // Invalid formula
+      }
+      
+      const result = new Function('return ' + sanitized)();
+      return typeof result === 'number' && isFinite(result) ? result : 0;
     } catch {
       return 0;
     }

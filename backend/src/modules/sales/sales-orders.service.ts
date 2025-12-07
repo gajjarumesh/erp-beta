@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { SalesOrder, SalesOrderLine, SalesOrderStatus, SalesQuote } from '../../database/entities';
 import { CreateSalesOrderDto, UpdateSalesOrderDto } from './dto';
+import { SalesCalculationHelper } from './sales-calculation.helper';
 
 @Injectable()
 export class SalesOrdersService {
@@ -27,7 +28,7 @@ export class SalesOrdersService {
     });
 
     // Calculate totals
-    const totals = this.calculateTotals(dto.lines);
+    const totals = SalesCalculationHelper.calculateTotals(dto.lines);
     order.subtotal = totals.subtotal;
     order.taxTotal = totals.taxTotal;
     order.discountTotal = totals.discountTotal;
@@ -37,7 +38,7 @@ export class SalesOrdersService {
 
     // Create lines
     const lines = dto.lines.map(line => {
-      const lineTotal = this.calculateLineTotal(line.qty, line.unitPrice, line.discount || 0, line.taxRate || 0);
+      const lineTotal = SalesCalculationHelper.calculateLineTotal(line);
       return this.salesOrderLineRepository.create({
         tenantId,
         orderId: savedOrder.id,
@@ -174,14 +175,14 @@ export class SalesOrdersService {
       await this.salesOrderLineRepository.delete({ orderId: id });
 
       // Create new lines
-      const totals = this.calculateTotals(dto.lines);
+      const totals = SalesCalculationHelper.calculateTotals(dto.lines);
       order.subtotal = totals.subtotal;
       order.taxTotal = totals.taxTotal;
       order.discountTotal = totals.discountTotal;
       order.total = totals.total;
 
       const lines = dto.lines.map(line => {
-        const lineTotal = this.calculateLineTotal(line.qty, line.unitPrice, line.discount || 0, line.taxRate || 0);
+        const lineTotal = SalesCalculationHelper.calculateLineTotal(line);
         return this.salesOrderLineRepository.create({
           tenantId,
           orderId: id,
@@ -232,34 +233,5 @@ export class SalesOrdersService {
     await this.salesOrderRepository.save(order);
 
     return order;
-  }
-
-  private calculateLineTotal(qty: number, unitPrice: number, discount: number, taxRate: number): number {
-    const subtotal = qty * unitPrice;
-    const afterDiscount = subtotal - discount;
-    const tax = (afterDiscount * taxRate) / 100;
-    return afterDiscount + tax;
-  }
-
-  private calculateTotals(lines: any[]): { subtotal: number; taxTotal: number; discountTotal: number; total: number } {
-    let subtotal = 0;
-    let taxTotal = 0;
-    let discountTotal = 0;
-
-    lines.forEach(line => {
-      const lineSubtotal = line.qty * line.unitPrice;
-      subtotal += lineSubtotal;
-      discountTotal += line.discount || 0;
-      taxTotal += ((lineSubtotal - (line.discount || 0)) * (line.taxRate || 0)) / 100;
-    });
-
-    const total = subtotal - discountTotal + taxTotal;
-
-    return {
-      subtotal: Number(subtotal.toFixed(2)),
-      taxTotal: Number(taxTotal.toFixed(2)),
-      discountTotal: Number(discountTotal.toFixed(2)),
-      total: Number(total.toFixed(2)),
-    };
   }
 }

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { SalesQuote, SalesQuoteLine, SalesQuoteStatus } from '../../database/entities';
 import { CreateSalesQuoteDto, UpdateSalesQuoteDto } from './dto';
+import { SalesCalculationHelper } from './sales-calculation.helper';
 
 @Injectable()
 export class SalesQuotesService {
@@ -26,7 +27,7 @@ export class SalesQuotesService {
     });
 
     // Calculate totals
-    const totals = this.calculateTotals(dto.lines);
+    const totals = SalesCalculationHelper.calculateTotals(dto.lines);
     quote.subtotal = totals.subtotal;
     quote.taxTotal = totals.taxTotal;
     quote.discountTotal = totals.discountTotal;
@@ -36,7 +37,7 @@ export class SalesQuotesService {
 
     // Create lines
     const lines = dto.lines.map(line => {
-      const lineTotal = this.calculateLineTotal(line.qty, line.unitPrice, line.discount || 0, line.taxRate || 0);
+      const lineTotal = SalesCalculationHelper.calculateLineTotal(line);
       return this.salesQuoteLineRepository.create({
         tenantId,
         quoteId: savedQuote.id,
@@ -128,14 +129,14 @@ export class SalesQuotesService {
       await this.salesQuoteLineRepository.delete({ quoteId: id });
 
       // Create new lines
-      const totals = this.calculateTotals(dto.lines);
+      const totals = SalesCalculationHelper.calculateTotals(dto.lines);
       quote.subtotal = totals.subtotal;
       quote.taxTotal = totals.taxTotal;
       quote.discountTotal = totals.discountTotal;
       quote.total = totals.total;
 
       const lines = dto.lines.map(line => {
-        const lineTotal = this.calculateLineTotal(line.qty, line.unitPrice, line.discount || 0, line.taxRate || 0);
+        const lineTotal = SalesCalculationHelper.calculateLineTotal(line);
         return this.salesQuoteLineRepository.create({
           tenantId,
           quoteId: id,
@@ -199,34 +200,5 @@ export class SalesQuotesService {
     await this.salesQuoteRepository.save(quote);
 
     return quote;
-  }
-
-  private calculateLineTotal(qty: number, unitPrice: number, discount: number, taxRate: number): number {
-    const subtotal = qty * unitPrice;
-    const afterDiscount = subtotal - discount;
-    const tax = (afterDiscount * taxRate) / 100;
-    return afterDiscount + tax;
-  }
-
-  private calculateTotals(lines: any[]): { subtotal: number; taxTotal: number; discountTotal: number; total: number } {
-    let subtotal = 0;
-    let taxTotal = 0;
-    let discountTotal = 0;
-
-    lines.forEach(line => {
-      const lineSubtotal = line.qty * line.unitPrice;
-      subtotal += lineSubtotal;
-      discountTotal += line.discount || 0;
-      taxTotal += ((lineSubtotal - (line.discount || 0)) * (line.taxRate || 0)) / 100;
-    });
-
-    const total = subtotal - discountTotal + taxTotal;
-
-    return {
-      subtotal: Number(subtotal.toFixed(2)),
-      taxTotal: Number(taxTotal.toFixed(2)),
-      discountTotal: Number(discountTotal.toFixed(2)),
-      total: Number(total.toFixed(2)),
-    };
   }
 }

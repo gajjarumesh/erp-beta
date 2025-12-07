@@ -87,7 +87,7 @@ export class Phase1CRMSales1702100000000 implements MigrationInterface {
         "source" varchar(50) DEFAULT 'other' CHECK ("source" IN ('website', 'referral', 'social_media', 'email_campaign', 'cold_call', 'trade_show', 'other')),
         "score" int,
         "ownerUserId" uuid REFERENCES "users"("id") ON DELETE SET NULL,
-        "tags" text,
+        "tags" jsonb,
         "notes" text,
         "createdAt" timestamp DEFAULT now(),
         "updatedAt" timestamp DEFAULT now(),
