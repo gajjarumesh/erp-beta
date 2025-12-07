@@ -34,7 +34,16 @@ export class JwtAuthGuard implements CanActivate {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
       request.user = payload;
-    } catch {
+    } catch (error) {
+      // Log error details for debugging
+      console.error('JWT verification failed:', error.message);
+      
+      // Provide specific error messages
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token has expired');
+      } else if (error.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Invalid token format');
+      }
       throw new UnauthorizedException('Invalid token');
     }
 

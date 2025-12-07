@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { User, Role } from '../../database/entities';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import * as argon2 from 'argon2';
@@ -36,7 +36,7 @@ export class UsersService {
     await this.userRepository.save(user);
 
     if (dto.roleIds && dto.roleIds.length > 0) {
-      const roles = await this.roleRepository.findByIds(dto.roleIds);
+      const roles = await this.roleRepository.findBy({ id: In(dto.roleIds) });
       user.roles = roles;
       await this.userRepository.save(user);
     }
@@ -73,7 +73,7 @@ export class UsersService {
     await this.userRepository.save(user);
 
     if (dto.roleIds) {
-      const roles = await this.roleRepository.findByIds(dto.roleIds);
+      const roles = await this.roleRepository.findBy({ id: In(dto.roleIds) });
       user.roles = roles;
       await this.userRepository.save(user);
     }

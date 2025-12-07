@@ -11,13 +11,13 @@ export class TenantInterceptor implements NestInterceptor {
     const user = request.user;
 
     if (user && user.tenantId) {
-      // Set tenant context for RLS
+      // Set tenant context for RLS using parameterized query
       const queryRunner = this.dataSource.createQueryRunner();
       await queryRunner.connect();
       
       try {
-        // Set PostgreSQL session variable for RLS
-        await queryRunner.query(`SET app.current_tenant = '${user.tenantId}'`);
+        // Use parameterized query to prevent SQL injection
+        await queryRunner.query('SET app.current_tenant = $1', [user.tenantId]);
       } finally {
         await queryRunner.release();
       }

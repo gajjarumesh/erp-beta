@@ -100,7 +100,15 @@ export class TenantsService {
   async update(id: string, dto: UpdateTenantDto): Promise<Tenant> {
     const tenant = await this.findOne(id);
 
-    Object.assign(tenant, dto);
+    // Explicit property assignment for better type safety
+    if (dto.name !== undefined) tenant.name = dto.name;
+    if (dto.plan !== undefined) tenant.plan = dto.plan;
+    if (dto.config !== undefined) tenant.config = dto.config;
+    if (dto.isActive !== undefined) tenant.isActive = dto.isActive;
+    if (dto.logoUrl !== undefined) tenant.logoUrl = dto.logoUrl;
+    if (dto.primaryColor !== undefined) tenant.primaryColor = dto.primaryColor;
+    if (dto.locale !== undefined) tenant.locale = dto.locale;
+    if (dto.timezone !== undefined) tenant.timezone = dto.timezone;
 
     return this.tenantRepository.save(tenant);
   }
