@@ -72,12 +72,23 @@ export function PackageBuilder({
 
   const handleCreatePackage = async () => {
     if (!packageName.trim()) {
-      alert('Please enter a package name')
+      // Use toast instead of alert
+      if (typeof window !== 'undefined') {
+        const event = new CustomEvent('show-toast', {
+          detail: { type: 'error', message: 'Please enter a package name' }
+        })
+        window.dispatchEvent(event)
+      }
       return
     }
 
     if (selectedModuleIds.length === 0) {
-      alert('Please select at least one module')
+      if (typeof window !== 'undefined') {
+        const event = new CustomEvent('show-toast', {
+          detail: { type: 'error', message: 'Please select at least one module' }
+        })
+        window.dispatchEvent(event)
+      }
       return
     }
 
@@ -89,7 +100,15 @@ export function PackageBuilder({
       }
     } catch (error) {
       console.error('Failed to create package:', error)
-      alert('Failed to create package. Please try again.')
+      if (typeof window !== 'undefined') {
+        const event = new CustomEvent('show-toast', {
+          detail: { 
+            type: 'error', 
+            message: 'Failed to create package. Please try again.' 
+          }
+        })
+        window.dispatchEvent(event)
+      }
     } finally {
       setIsCreating(false)
     }

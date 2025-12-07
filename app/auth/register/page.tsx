@@ -59,17 +59,19 @@ export default function RegisterPage() {
 
     try {
       // Step 1: Create tenant
-      const tenantSlug = formData.company
+      // Generate slug from company name or user name
+      const slugSource = formData.company || formData.name || 'user'
+      const tenantSlug = slugSource
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '')
+        .replace(/(^-|-$)/g, '') || `user-${Date.now()}`
 
       const tenantResponse = await apiClient.tenants.onboard({
         name: formData.company || formData.name,
         slug: tenantSlug,
         adminEmail: formData.email,
         adminName: formData.name,
-        adminPassword: formData.password,
+        adminPassword: formData.password, // Backend will hash this over HTTPS
       })
 
       if (!tenantResponse.data) {

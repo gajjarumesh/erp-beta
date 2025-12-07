@@ -176,7 +176,7 @@ export const usePackageBuilderStore = create<PackageBuilderState>((set, get) => 
     
     // Skip if no modules selected
     if (selectedModuleIds.length === 0) {
-      set({ calculatedPrice: 0 });
+      set({ calculatedPrice: 0, isCalculatingPrice: false });
       return;
     }
     
