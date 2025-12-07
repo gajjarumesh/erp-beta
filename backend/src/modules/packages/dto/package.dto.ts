@@ -1,5 +1,6 @@
 import { IsString, IsNumber, IsOptional, IsBoolean, IsEnum, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { LimitType } from '../../../database/entities';
 
 export class CreateModuleCatalogDto {
   @IsString()
@@ -54,8 +55,8 @@ export class CreateLimitTypeCatalogDto {
   @IsString()
   slug: string;
 
-  @IsEnum(['users', 'storage_gb', 'transactions', 'records', 'api_calls'])
-  type: string;
+  @IsEnum(LimitType)
+  type: LimitType;
 
   @IsString()
   name: string;

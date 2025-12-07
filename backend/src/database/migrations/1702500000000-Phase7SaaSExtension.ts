@@ -445,7 +445,7 @@ export class Phase7SaaSExtension1702500000000 implements MigrationInterface {
       USING ("tenantId" = current_setting('app.current_tenant', true)::uuid)
     `);
 
-    console.log('✅ Phase 7 migration completed successfully');
+    // Migration completed successfully
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -486,6 +486,6 @@ export class Phase7SaaSExtension1702500000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS "sub_modules_catalog" CASCADE`);
     await queryRunner.query(`DROP TABLE IF EXISTS "modules_catalog" CASCADE`);
 
-    console.log('✅ Phase 7 migration reverted successfully');
+    // Migration reverted successfully
   }
 }

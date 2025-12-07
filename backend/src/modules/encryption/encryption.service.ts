@@ -12,6 +12,13 @@ import * as crypto from 'crypto';
  * 5. Encryption happens client-side or in-memory only
  */
 
+export enum UserRole {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  ADMIN = 'ADMIN',
+  MANAGER = 'MANAGER',
+  USER = 'USER',
+}
+
 @Injectable()
 export class EncryptionService {
   private readonly logger = new Logger(EncryptionService.name);
@@ -193,9 +200,9 @@ export class EncryptionService {
    * Verify that a user has access to decrypt data
    * This is a placeholder - implement actual authorization logic
    */
-  verifyDecryptionAccess(userId: string, dataOwnerId: string, userRole: string): boolean {
+  verifyDecryptionAccess(userId: string, dataOwnerId: string, userRole: UserRole): boolean {
     // Super Admin should NEVER have access
-    if (userRole === 'SUPER_ADMIN') {
+    if (userRole === UserRole.SUPER_ADMIN) {
       this.logger.warn(`Super Admin attempted to access encrypted data for user ${dataOwnerId}`);
       return false;
     }

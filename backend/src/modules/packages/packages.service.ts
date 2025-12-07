@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import {
   ModulesCatalog,
   SubModulesCatalog,
@@ -104,35 +104,42 @@ export class PackagesService {
 
     // Calculate modules price
     if (dto.moduleIds && dto.moduleIds.length > 0) {
-      const modules = await this.modulesCatalogRepo.findByIds(dto.moduleIds);
+      const modules = await this.modulesCatalogRepo.find({
+        where: { id: In(dto.moduleIds) },
+      });
       for (const module of modules) {
-        modulesPrice += Number(module.yearlyPrice);
+        modulesPrice += parseFloat(module.yearlyPrice.toString());
         modulesBreakdown.push({
           id: module.id,
           name: module.name,
-          price: Number(module.yearlyPrice),
+          price: parseFloat(module.yearlyPrice.toString()),
         });
       }
     }
 
     // Calculate sub-modules price
     if (dto.subModuleIds && dto.subModuleIds.length > 0) {
-      const subModules = await this.subModulesCatalogRepo.findByIds(dto.subModuleIds);
+      const subModules = await this.subModulesCatalogRepo.find({
+        where: { id: In(dto.subModuleIds) },
+      });
       for (const subModule of subModules) {
-        subModulesPrice += Number(subModule.yearlyPrice);
+        subModulesPrice += parseFloat(subModule.yearlyPrice.toString());
         subModulesBreakdown.push({
           id: subModule.id,
           name: subModule.name,
-          price: Number(subModule.yearlyPrice),
+          price: parseFloat(subModule.yearlyPrice.toString()),
         });
       }
     }
 
     // Calculate limits expansion price
+    const limitTypeIds = dto.limits.map(l => l.limitTypeId);
+    const limitTypes = await this.limitTypesCatalogRepo.find({
+      where: { id: In(limitTypeIds) },
+    });
+
     for (const limit of dto.limits) {
-      const limitType = await this.limitTypesCatalogRepo.findOne({
-        where: { id: limit.limitTypeId },
-      });
+      const limitType = limitTypes.find(lt => lt.id === limit.limitTypeId);
 
       if (!limitType) {
         throw new NotFoundException(`Limit type ${limit.limitTypeId} not found`);
@@ -142,7 +149,7 @@ export class PackagesService {
       const additionalUnits = Math.max(0, limit.limitValue - limitType.defaultLimit);
 
       if (additionalUnits > 0) {
-        const price = additionalUnits * Number(limitType.pricePerUnit);
+        const price = additionalUnits * parseFloat(limitType.pricePerUnit.toString());
         limitsPrice += price;
 
         limitsBreakdown.push({
