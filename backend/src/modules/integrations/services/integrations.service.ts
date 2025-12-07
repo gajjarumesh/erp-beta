@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Integration, IntegrationStatus, IntegrationType } from '../../../database/entities';
+import { IntegrationAdapter } from '../adapters/base.adapter';
 import {
   StripeAdapter,
   RazorpayAdapter,
@@ -108,7 +109,7 @@ export class IntegrationsService {
     }
   }
 
-  getAdapter(type: IntegrationType): any {
+  getAdapter(type: IntegrationType): IntegrationAdapter {
     switch (type) {
       case IntegrationType.STRIPE:
         return this.stripeAdapter;

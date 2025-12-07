@@ -1,4 +1,5 @@
 export interface IntegrationAdapter {
+  configure(config: any): void;
   test(): Promise<{ success: boolean; message?: string }>;
 }
 

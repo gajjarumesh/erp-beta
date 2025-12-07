@@ -1,19 +1,39 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-interface Metric {
-  name: string;
-  type: 'counter' | 'gauge' | 'histogram' | 'summary';
+interface CounterMetric {
+  type: 'counter';
   help: string;
-  value?: number;
-  labels?: Record<string, string>;
-  buckets?: number[];
-  quantiles?: number[];
+  labels: string[];
+  values: Map<string, number>;
 }
+
+interface GaugeMetric {
+  type: 'gauge';
+  help: string;
+  labels: string[];
+  values: Map<string, number>;
+}
+
+interface HistogramObservation {
+  sum: number;
+  count: number;
+  buckets: Map<number, number>;
+}
+
+interface HistogramMetric {
+  type: 'histogram';
+  help: string;
+  labels: string[];
+  buckets: number[];
+  values: Map<string, HistogramObservation>;
+}
+
+type Metric = CounterMetric | GaugeMetric | HistogramMetric;
 
 @Injectable()
 export class PrometheusService {
   private readonly logger = new Logger(PrometheusService.name);
-  private metrics: Map<string, any> = new Map();
+  private metrics: Map<string, Metric> = new Map();
 
   constructor() {
     this.initializeMetrics();
@@ -109,7 +129,7 @@ export class PrometheusService {
       help,
       labels,
       values: new Map<string, number>(),
-    });
+    } as CounterMetric);
   }
 
   registerGauge(name: string, help: string, labels: string[] = []) {
@@ -118,7 +138,7 @@ export class PrometheusService {
       help,
       labels,
       values: new Map<string, number>(),
-    });
+    } as GaugeMetric);
   }
 
   registerHistogram(
@@ -132,8 +152,8 @@ export class PrometheusService {
       help,
       labels,
       buckets,
-      values: new Map<string, { sum: number; count: number; buckets: Map<number, number> }>(),
-    });
+      values: new Map<string, HistogramObservation>(),
+    } as HistogramMetric);
   }
 
   incrementCounter(name: string, labels: Record<string, string> = {}, value: number = 1) {
@@ -166,7 +186,11 @@ export class PrometheusService {
         count: 0,
         buckets: new Map<number, number>(),
       };
-      metric.buckets.forEach((bucket: number) => observation.buckets.set(bucket, 0));
+      metric.buckets.forEach((bucket: number) => {
+        if (observation) {
+          observation.buckets.set(bucket, 0);
+        }
+      });
       metric.values.set(key, observation);
     }
 
@@ -175,7 +199,7 @@ export class PrometheusService {
 
     // Update buckets
     metric.buckets.forEach((bucket: number) => {
-      if (value <= bucket) {
+      if (value <= bucket && observation) {
         observation.buckets.set(bucket, observation.buckets.get(bucket)! + 1);
       }
     });

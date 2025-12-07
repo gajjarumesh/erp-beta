@@ -277,9 +277,20 @@ export default function PluginsPage() {
                       {plugin.tenantConfig?.config && (
                         <div className="text-xs text-gray-500">
                           <p className="font-semibold mb-1">Configuration:</p>
-                          <pre className="bg-gray-100 p-2 rounded overflow-auto">
-                            {JSON.stringify(plugin.tenantConfig.config, null, 2)}
-                          </pre>
+                          <div className="bg-gray-100 p-2 rounded">
+                            {Object.entries(plugin.tenantConfig.config).map(([key, value]) => (
+                              <div key={key} className="flex justify-between py-1">
+                                <span className="font-medium">{key}:</span>
+                                <span className="text-gray-700">
+                                  {key.toLowerCase().includes('key') || 
+                                   key.toLowerCase().includes('secret') || 
+                                   key.toLowerCase().includes('token')
+                                    ? '••••••••'
+                                    : String(value)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </CardContent>

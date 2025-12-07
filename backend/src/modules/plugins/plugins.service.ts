@@ -148,7 +148,7 @@ export class PluginsService {
   async registerWorkflowAction(
     pluginKey: string,
     actionKey: string,
-    handler: (params: any) => Promise<any>,
+    handler: (params: Record<string, any>) => Promise<Record<string, any>>,
   ): Promise<void> {
     // Store workflow action registration
     this.logger.log(`Registered workflow action ${actionKey} for plugin ${pluginKey}`);
