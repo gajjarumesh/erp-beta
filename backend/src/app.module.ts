@@ -19,6 +19,9 @@ import { TenantInterceptor, AuditInterceptor } from './common/interceptors';
 // Modules
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { AuditModule } from './modules/audit/audit.module';
 
 @Module({
   imports: [
@@ -63,6 +66,9 @@ import { AuthModule } from './modules/auth/auth.module';
     // Feature modules
     TenantsModule,
     AuthModule,
+    UsersModule,
+    SettingsModule,
+    AuditModule,
   ],
   providers: [
     // Global guards
