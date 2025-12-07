@@ -93,6 +93,16 @@ export class Ticket {
   @Column({ type: 'jsonb', nullable: true })
   tags: string[];
 
+  // Phase 7 - GitHub Integration
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  githubIssueId: string;
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  githubIssueUrl: string;
+
+  @Column({ type: 'boolean', default: false })
+  customerCanChangePriority: boolean; // Phase 7: Restrict customer priority changes
+
   @CreateDateColumn()
   createdAt: Date;
 
