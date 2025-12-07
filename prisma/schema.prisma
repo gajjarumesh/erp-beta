@@ -755,3 +755,110 @@ model AuditLog {
   userAgent   String?
   createdAt   DateTime @default(now())
 }
+
+// ==========================================
+// PHASE 5: POS, BI & WORKFLOW ENGINE
+// ==========================================
+
+// POS (Point of Sale)
+model PosSession {
+  id              String         @id @default(cuid())
+  companyId       String?
+  openedByUserId  String
+  openedAt        DateTime       @default(now())
+  closedAt        DateTime?
+  openingBalance  Decimal        @db.Decimal(10, 2) @default(0)
+  closingBalance  Decimal?       @db.Decimal(10, 2)
+  status          PosSessionStatus @default(OPEN)
+  notes           String?
+  transactions    PosTransaction[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+enum PosSessionStatus {
+  OPEN
+  CLOSED
+}
+
+model PosTransaction {
+  id             String     @id @default(cuid())
+  sessionId      String
+  session        PosSession @relation(fields: [sessionId], references: [id])
+  receiptNumber  String     @unique
+  companyId      String?
+  items          Json       // Array of {productId, name, quantity, unitPrice, subtotal}
+  totalAmount    Decimal    @db.Decimal(10, 2)
+  paymentMethod  PaymentMethod @default(CASH)
+  changeGiven    Decimal    @db.Decimal(10, 2) @default(0)
+  customerId     String?
+  notes          String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+// BI & Reporting
+model SavedReport {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  config      Json     // Report configuration: query, filters, visualization type
+  category    String?  // Revenue, Inventory, Sales, HR, etc.
+  isActive    Boolean  @default(true)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DashboardWidget {
+  id          String   @id @default(cuid())
+  userId      String   // Widget belongs to a user
+  name        String
+  type        String   // chart, table, metric, list
+  config      Json     // Widget configuration: data source, visualization settings
+  position    Json     // {x: 0, y: 0, width: 4, height: 3}
+  reportSlug  String?  // Link to saved report
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Workflow Engine
+model WorkflowRule {
+  id          String        @id @default(cuid())
+  companyId   String
+  name        String
+  description String?
+  trigger     Json          // {type: "on_create|on_update|on_delete|schedule|webhook", entity: "invoice", config: {...}}
+  conditions  Json          // JSON-based conditions: {field: "due_date", operator: "<", value: "now"}
+  actions     Json          // Array of actions: [{type: "send_email", config: {...}}]
+  isActive    Boolean       @default(true)
+  runsCount   Int           @default(0)
+  lastRunAt   DateTime?
+  createdBy   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  logs        WorkflowLog[]
+}
+
+model WorkflowLog {
+  id              String          @id @default(cuid())
+  workflowId      String
+  workflow        WorkflowRule    @relation(fields: [workflowId], references: [id])
+  status          WorkflowLogStatus @default(PENDING)
+  runAt           DateTime        @default(now())
+  inputSnapshot   Json?           // Snapshot of entity data that triggered workflow
+  outputSnapshot  Json?           // Result of actions executed
+  errorMessage    String?
+  executionTime   Int?            // Milliseconds
+  createdAt       DateTime        @default(now())
+}
+
+enum WorkflowLogStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  RETRY
+}
