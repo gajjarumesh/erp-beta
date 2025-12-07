@@ -28,6 +28,19 @@ import { Payment, PaymentMethod } from './payment.entity';
 import { BankAccount } from './bank-account.entity';
 import { BankTransaction, BankTransactionStatus } from './bank-transaction.entity';
 import { TaxRule, TaxType } from './tax-rule.entity';
+import { Employee, EmployeeStatus } from './employee.entity';
+import { AttendanceLog, AttendanceSource } from './attendance-log.entity';
+import { LeaveRequest, LeaveType, LeaveStatus } from './leave-request.entity';
+import { ExpenseClaim, ExpenseStatus } from './expense-claim.entity';
+import { PayrollConfig, PayrollCycle } from './payroll-config.entity';
+import { Payslip, PayslipStatus } from './payslip.entity';
+import { Project, ProjectStatus } from './project.entity';
+import { Task, TaskStatus, TaskPriority } from './task.entity';
+import { TaskComment } from './task-comment.entity';
+import { Timesheet } from './timesheet.entity';
+import { Ticket, TicketPriority, TicketStatus } from './ticket.entity';
+import { TicketComment } from './ticket-comment.entity';
+import { SlaRule } from './sla-rule.entity';
 
 // Export entities
 export { 
@@ -75,6 +88,31 @@ export {
   BankTransactionStatus,
   TaxRule,
   TaxType,
+  Employee,
+  EmployeeStatus,
+  AttendanceLog,
+  AttendanceSource,
+  LeaveRequest,
+  LeaveType,
+  LeaveStatus,
+  ExpenseClaim,
+  ExpenseStatus,
+  PayrollConfig,
+  PayrollCycle,
+  Payslip,
+  PayslipStatus,
+  Project,
+  ProjectStatus,
+  Task,
+  TaskStatus,
+  TaskPriority,
+  TaskComment,
+  Timesheet,
+  Ticket,
+  TicketPriority,
+  TicketStatus,
+  TicketComment,
+  SlaRule,
 };
 
 // Entity array for TypeORM (excluding enums)
@@ -109,5 +147,18 @@ export const entities = [
   BankAccount,
   BankTransaction,
   TaxRule,
+  Employee,
+  AttendanceLog,
+  LeaveRequest,
+  ExpenseClaim,
+  PayrollConfig,
+  Payslip,
+  Project,
+  Task,
+  TaskComment,
+  Timesheet,
+  Ticket,
+  TicketComment,
+  SlaRule,
 ];
 
