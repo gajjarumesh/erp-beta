@@ -197,6 +197,50 @@ class ApiClient {
       return this.request(`/audit-logs${query ? `?${query}` : ''}`);
     },
   };
+
+  // Package endpoints (Phase 7/8)
+  packages = {
+    // Catalog endpoints
+    getModulesCatalog: () => this.request('/packages/catalog/modules'),
+    getLimitTypesCatalog: () => this.request('/packages/catalog/limits'),
+    
+    // Pricing calculator
+    calculatePrice: (data: {
+      moduleIds: string[];
+      subModuleIds?: string[];
+      limits: Array<{ limitTypeId: string; limitValue: number }>;
+    }) => this.request('/packages/calculate-price', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    
+    // Custom package management
+    createCustomPackage: (data: {
+      name: string;
+      description?: string;
+      modules: Array<{ moduleId: string }>;
+      subModules?: Array<{ subModuleId: string }>;
+      limits: Array<{ limitTypeId: string; limitValue: number }>;
+    }) => this.request('/packages/custom', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    
+    getCustomPackages: () => this.request('/packages/custom'),
+    
+    getCustomPackageById: (id: string) => this.request(`/packages/custom/${id}`),
+    
+    activatePackage: (id: string) => 
+      this.request(`/packages/custom/${id}/activate`, { method: 'PUT' }),
+    
+    upgradePackage: (currentId: string, newPackageId: string) =>
+      this.request(`/packages/custom/${currentId}/upgrade`, {
+        method: 'PUT',
+        body: JSON.stringify({ newPackageId }),
+      }),
+    
+    getPackageLimits: (id: string) => this.request(`/packages/custom/${id}/limits`),
+  };
 }
 
 // Export singleton instance
