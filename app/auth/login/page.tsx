@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
@@ -12,23 +13,36 @@ import {
   ArrowRight,
   Github,
   Chrome,
+  AlertCircle,
 } from 'lucide-react'
+import { useAuthStore } from '@/lib/stores/auth-store'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirect') || '/dashboard'
+  
+  const { login, isLoading, error, clearError } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     remember: false,
   })
+  const [localError, setLocalError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    // Simulate login
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    window.location.href = '/dashboard'
+    clearError()
+    setLocalError('')
+
+    try {
+      await login(formData.email, formData.password)
+      // Redirect on successful login
+      router.push(redirectUrl)
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.')
+    }
   }
 
   return (
@@ -54,6 +68,20 @@ export default function LoginPage() {
           <p className="text-gray-600 dark:text-gray-400 mb-8">
             Sign in to your account to continue
           </p>
+
+          {/* Error Message */}
+          {(error || localError) && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-start gap-3"
+            >
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {localError || error}
+              </p>
+            </motion.div>
+          )}
 
           {/* Social Login */}
           <div className="grid grid-cols-2 gap-4 mb-6">
