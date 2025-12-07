@@ -47,6 +47,10 @@ import { SavedReport } from './saved-report.entity';
 import { DashboardWidget } from './dashboard-widget.entity';
 import { WorkflowRule } from './workflow-rule.entity';
 import { WorkflowLog, WorkflowLogStatus } from './workflow-log.entity';
+import { Integration, IntegrationType, IntegrationStatus } from './integration.entity';
+import { WebhookSubscription } from './webhook-subscription.entity';
+import { Plugin } from './plugin.entity';
+import { PluginConfig } from './plugin-config.entity';
 
 // Export entities
 export { 
@@ -128,6 +132,12 @@ export {
   WorkflowRule,
   WorkflowLog,
   WorkflowLogStatus,
+  Integration,
+  IntegrationType,
+  IntegrationStatus,
+  WebhookSubscription,
+  Plugin,
+  PluginConfig,
 };
 
 // Entity array for TypeORM (excluding enums)
@@ -181,5 +191,9 @@ export const entities = [
   DashboardWidget,
   WorkflowRule,
   WorkflowLog,
+  Integration,
+  WebhookSubscription,
+  Plugin,
+  PluginConfig,
 ];
 

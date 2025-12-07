@@ -32,6 +32,9 @@ import { HelpdeskModule } from './modules/helpdesk/helpdesk.module';
 import { PosModule } from './modules/pos/pos.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { PluginsModule } from './modules/plugins/plugins.module';
+import { ObservabilityModule } from './modules/observability/observability.module';
 
 @Module({
   imports: [
@@ -89,6 +92,9 @@ import { WorkflowsModule } from './modules/workflows/workflows.module';
     PosModule,
     ReportsModule,
     WorkflowsModule,
+    IntegrationsModule,
+    PluginsModule,
+    ObservabilityModule,
   ],
   providers: [
     // Global guards
