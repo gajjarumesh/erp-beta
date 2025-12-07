@@ -83,6 +83,33 @@ async function seed() {
       { code: 'sales:order:create', description: 'Create sales orders' },
       { code: 'sales:order:update', description: 'Update sales orders' },
       { code: 'sales:order:delete', description: 'Delete sales orders' },
+
+      // Accounting permissions
+      { code: 'accounting:account:read', description: 'View accounts' },
+      { code: 'accounting:account:create', description: 'Create accounts' },
+      { code: 'accounting:account:update', description: 'Update accounts' },
+      { code: 'accounting:account:delete', description: 'Delete accounts' },
+      { code: 'accounting:journal:read', description: 'View journal entries' },
+      { code: 'accounting:journal:create', description: 'Create journal entries' },
+      { code: 'accounting:journal:update', description: 'Update journal entries' },
+      { code: 'accounting:journal:delete', description: 'Delete journal entries' },
+      { code: 'accounting:invoice:read', description: 'View invoices' },
+      { code: 'accounting:invoice:create', description: 'Create invoices' },
+      { code: 'accounting:invoice:update', description: 'Update invoices' },
+      { code: 'accounting:invoice:delete', description: 'Delete invoices' },
+      { code: 'accounting:payment:read', description: 'View payments' },
+      { code: 'accounting:payment:create', description: 'Create payments' },
+      { code: 'accounting:payment:update', description: 'Update payments' },
+      { code: 'accounting:payment:delete', description: 'Delete payments' },
+      { code: 'accounting:bank:read', description: 'View bank accounts' },
+      { code: 'accounting:bank:create', description: 'Create bank accounts' },
+      { code: 'accounting:bank:update', description: 'Update bank accounts' },
+      { code: 'accounting:bank:delete', description: 'Delete bank accounts' },
+      { code: 'accounting:tax:read', description: 'View tax rules' },
+      { code: 'accounting:tax:create', description: 'Create tax rules' },
+      { code: 'accounting:tax:update', description: 'Update tax rules' },
+      { code: 'accounting:tax:delete', description: 'Delete tax rules' },
+      { code: 'accounting:report:read', description: 'View financial reports' },
     ];
 
     for (const permission of permissions) {
@@ -247,6 +274,93 @@ async function seed() {
     ];
 
     for (const setting of defaultSettings) {
+      await dataSource.query(
+        `INSERT INTO settings ("tenantId", scope, key, value)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT ("tenantId", scope, key) DO UPDATE SET value = $4`,
+        [tenantId, 'tenant', setting.key, JSON.stringify(setting.value)],
+      );
+    }
+
+    // Seed base chart of accounts
+    console.log('Creating base chart of accounts...');
+    const baseAccounts = [
+      // Assets
+      { code: '1000', name: 'Cash and Cash Equivalents', type: 'asset', isSystem: true },
+      { code: '1100', name: 'Bank Accounts', type: 'asset', isSystem: true },
+      { code: '1200', name: 'Accounts Receivable', type: 'asset', isSystem: true },
+      { code: '1300', name: 'Inventory', type: 'asset', isSystem: true },
+      { code: '1400', name: 'Prepaid Expenses', type: 'asset', isSystem: true },
+      { code: '1500', name: 'Fixed Assets', type: 'asset', isSystem: true },
+      { code: '1510', name: 'Equipment', type: 'asset', isSystem: false },
+      { code: '1520', name: 'Accumulated Depreciation', type: 'asset', isSystem: false },
+
+      // Liabilities
+      { code: '2000', name: 'Current Liabilities', type: 'liability', isSystem: true },
+      { code: '2100', name: 'Accounts Payable', type: 'liability', isSystem: true },
+      { code: '2200', name: 'Tax Payable', type: 'liability', isSystem: true },
+      { code: '2300', name: 'Accrued Expenses', type: 'liability', isSystem: false },
+      { code: '2400', name: 'Long-term Debt', type: 'liability', isSystem: false },
+
+      // Equity
+      { code: '3000', name: 'Equity', type: 'equity', isSystem: true },
+      { code: '3100', name: 'Owner\'s Equity', type: 'equity', isSystem: true },
+      { code: '3200', name: 'Retained Earnings', type: 'equity', isSystem: true },
+
+      // Income
+      { code: '4000', name: 'Revenue', type: 'income', isSystem: true },
+      { code: '4100', name: 'Sales Revenue', type: 'income', isSystem: true },
+      { code: '4200', name: 'Service Revenue', type: 'income', isSystem: false },
+      { code: '4300', name: 'Other Income', type: 'income', isSystem: false },
+
+      // Expenses
+      { code: '5000', name: 'Cost of Goods Sold', type: 'expense', isSystem: true },
+      { code: '6000', name: 'Operating Expenses', type: 'expense', isSystem: true },
+      { code: '6100', name: 'Salaries and Wages', type: 'expense', isSystem: false },
+      { code: '6200', name: 'Rent', type: 'expense', isSystem: false },
+      { code: '6300', name: 'Utilities', type: 'expense', isSystem: false },
+      { code: '6400', name: 'Marketing and Advertising', type: 'expense', isSystem: false },
+      { code: '6500', name: 'Professional Fees', type: 'expense', isSystem: false },
+      { code: '6600', name: 'Office Supplies', type: 'expense', isSystem: false },
+      { code: '6700', name: 'Depreciation', type: 'expense', isSystem: false },
+    ];
+
+    for (const account of baseAccounts) {
+      await dataSource.query(
+        `INSERT INTO accounts ("tenantId", code, name, type, "isActive", "isSystem")
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (code) DO NOTHING`,
+        [tenantId, account.code, account.name, account.type, true, account.isSystem],
+      );
+    }
+
+    // Seed sample tax rules
+    console.log('Creating sample tax rules...');
+    const taxRules = [
+      { name: 'Standard VAT', code: 'VAT-STANDARD', rate: 20.0, type: 'exclusive', region: 'UK' },
+      { name: 'Reduced VAT', code: 'VAT-REDUCED', rate: 5.0, type: 'exclusive', region: 'UK' },
+      { name: 'Sales Tax', code: 'SALES-TAX', rate: 8.5, type: 'exclusive', region: 'US' },
+    ];
+
+    for (const taxRule of taxRules) {
+      await dataSource.query(
+        `INSERT INTO tax_rules ("tenantId", name, code, rate, type, region, "isActive")
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (code) DO NOTHING`,
+        [tenantId, taxRule.name, taxRule.code, taxRule.rate, taxRule.type, taxRule.region, true],
+      );
+    }
+
+    // Add accounting settings
+    console.log('Creating accounting settings...');
+    const accountingSettings = [
+      { key: 'accounting.base_currency', value: 'USD' },
+      { key: 'accounting.tax.inclusive_by_default', value: false },
+      { key: 'accounting.invoice.payment_terms_default_days', value: 30 },
+      { key: 'accounting.aging.buckets', value: [30, 60, 90] },
+    ];
+
+    for (const setting of accountingSettings) {
       await dataSource.query(
         `INSERT INTO settings ("tenantId", scope, key, value)
          VALUES ($1, $2, $3, $4)
