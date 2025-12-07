@@ -51,6 +51,19 @@ import { Integration, IntegrationType, IntegrationStatus } from './integration.e
 import { WebhookSubscription } from './webhook-subscription.entity';
 import { Plugin } from './plugin.entity';
 import { PluginConfig } from './plugin-config.entity';
+// Phase 7 - SaaS Extension Entities
+import { ModulesCatalog } from './modules-catalog.entity';
+import { SubModulesCatalog } from './sub-modules-catalog.entity';
+import { LimitTypesCatalog, LimitType } from './limit-types-catalog.entity';
+import { CustomPackage, PackageStatus } from './custom-package.entity';
+import { CustomPackageModule } from './custom-package-module.entity';
+import { CustomPackageSubModule } from './custom-package-sub-module.entity';
+import { CustomPackageLimit } from './custom-package-limit.entity';
+import { Phase7Subscription, Phase7SubscriptionStatus, PaymentCycle } from './phase7-subscription.entity';
+import { SecureIdentityData, IdentityDataType } from './secure-identity-data.entity';
+import { SecureDocument, DocumentType } from './secure-document.entity';
+import { SecurePaymentToken, PaymentGateway } from './secure-payment-token.entity';
+import { Inquiry, InquiryStatus, InquiryType } from './inquiry.entity';
 
 // Export entities
 export { 
@@ -138,6 +151,28 @@ export {
   WebhookSubscription,
   Plugin,
   PluginConfig,
+  // Phase 7 exports
+  ModulesCatalog,
+  SubModulesCatalog,
+  LimitTypesCatalog,
+  LimitType,
+  CustomPackage,
+  PackageStatus,
+  CustomPackageModule,
+  CustomPackageSubModule,
+  CustomPackageLimit,
+  Phase7Subscription,
+  Phase7SubscriptionStatus,
+  PaymentCycle,
+  SecureIdentityData,
+  IdentityDataType,
+  SecureDocument,
+  DocumentType,
+  SecurePaymentToken,
+  PaymentGateway,
+  Inquiry,
+  InquiryStatus,
+  InquiryType,
 };
 
 // Entity array for TypeORM (excluding enums)
@@ -195,5 +230,18 @@ export const entities = [
   WebhookSubscription,
   Plugin,
   PluginConfig,
+  // Phase 7 entities
+  ModulesCatalog,
+  SubModulesCatalog,
+  LimitTypesCatalog,
+  CustomPackage,
+  CustomPackageModule,
+  CustomPackageSubModule,
+  CustomPackageLimit,
+  Phase7Subscription,
+  SecureIdentityData,
+  SecureDocument,
+  SecurePaymentToken,
+  Inquiry,
 ];
 
