@@ -10,6 +10,7 @@ import { appConfig, databaseConfig, jwtConfig, redisConfig } from './config';
 
 // Database
 import { getDatabaseConfig } from './database/data-source';
+import { entities } from './database/entities';
 
 // Common
 import { JwtAuthGuard, PermissionsGuard } from './common/guards';
@@ -18,9 +19,6 @@ import { TenantInterceptor, AuditInterceptor } from './common/interceptors';
 // Modules
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { AuthModule } from './modules/auth/auth.module';
-
-// Entities (needed for guards and interceptors)
-import * as entities from './database/entities';
 
 @Module({
   imports: [
@@ -39,7 +37,7 @@ import * as entities from './database/entities';
     }),
 
     // TypeORM entities for global use
-    TypeOrmModule.forFeature(Object.values(entities)),
+    TypeOrmModule.forFeature(entities),
 
     // JWT (global)
     JwtModule.registerAsync({
@@ -89,3 +87,4 @@ import * as entities from './database/entities';
   ],
 })
 export class AppModule {}
+

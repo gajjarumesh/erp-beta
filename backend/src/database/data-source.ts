@@ -1,12 +1,12 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import * as entities from './entities';
+import { entities } from './entities';
 
 export const getDatabaseConfig = (configService: ConfigService): DataSourceOptions => {
   return {
     type: 'postgres',
     url: configService.get<string>('DATABASE_URL'),
-    entities: Object.values(entities),
+    entities: entities,
     migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     synchronize: false,
     logging: configService.get<string>('NODE_ENV') === 'development',
