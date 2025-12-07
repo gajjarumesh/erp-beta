@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/backend/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -12,6 +13,7 @@
 
 # testing
 /coverage
+/backend/coverage
 
 # next.js
 /.next/
@@ -19,6 +21,7 @@
 
 # production
 /build
+/backend/dist
 
 # misc
 .DS_Store
@@ -36,6 +39,8 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+backend/.env
+backend/.env.local
 
 # vercel
 .vercel
@@ -46,3 +51,7 @@ next-env.d.ts
 
 # prisma
 /app/generated/prisma
+
+# uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
