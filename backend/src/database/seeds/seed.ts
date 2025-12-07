@@ -45,6 +45,44 @@ async function seed() {
       { code: 'core:notifications:read', description: 'View notifications' },
       { code: 'core:notifications:create', description: 'Create notifications' },
       { code: 'core:notifications:update', description: 'Update notifications' },
+
+      // CRM permissions
+      { code: 'crm:company:read', description: 'View companies' },
+      { code: 'crm:company:create', description: 'Create companies' },
+      { code: 'crm:company:update', description: 'Update companies' },
+      { code: 'crm:company:delete', description: 'Delete companies' },
+      { code: 'crm:contact:read', description: 'View contacts' },
+      { code: 'crm:contact:create', description: 'Create contacts' },
+      { code: 'crm:contact:update', description: 'Update contacts' },
+      { code: 'crm:contact:delete', description: 'Delete contacts' },
+      { code: 'crm:lead:read', description: 'View leads' },
+      { code: 'crm:lead:create', description: 'Create leads' },
+      { code: 'crm:lead:update', description: 'Update leads' },
+      { code: 'crm:lead:delete', description: 'Delete leads' },
+      { code: 'crm:opportunity:read', description: 'View opportunities' },
+      { code: 'crm:opportunity:create', description: 'Create opportunities' },
+      { code: 'crm:opportunity:update', description: 'Update opportunities' },
+      { code: 'crm:opportunity:delete', description: 'Delete opportunities' },
+      { code: 'crm:pipeline:read', description: 'View pipelines' },
+      { code: 'crm:pipeline:create', description: 'Create pipelines' },
+      { code: 'crm:pipeline:update', description: 'Update pipelines' },
+      { code: 'crm:pipeline:delete', description: 'Delete pipelines' },
+
+      // Product permissions
+      { code: 'product:read', description: 'View products' },
+      { code: 'product:create', description: 'Create products' },
+      { code: 'product:update', description: 'Update products' },
+      { code: 'product:delete', description: 'Delete products' },
+
+      // Sales permissions
+      { code: 'sales:quote:read', description: 'View sales quotes' },
+      { code: 'sales:quote:create', description: 'Create sales quotes' },
+      { code: 'sales:quote:update', description: 'Update sales quotes' },
+      { code: 'sales:quote:delete', description: 'Delete sales quotes' },
+      { code: 'sales:order:read', description: 'View sales orders' },
+      { code: 'sales:order:create', description: 'Create sales orders' },
+      { code: 'sales:order:update', description: 'Update sales orders' },
+      { code: 'sales:order:delete', description: 'Delete sales orders' },
     ];
 
     for (const permission of permissions) {
