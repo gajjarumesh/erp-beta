@@ -41,6 +41,12 @@ import { Timesheet } from './timesheet.entity';
 import { Ticket, TicketPriority, TicketStatus } from './ticket.entity';
 import { TicketComment } from './ticket-comment.entity';
 import { SlaRule } from './sla-rule.entity';
+import { PosSession, PosSessionStatus } from './pos-session.entity';
+import { PosTransaction, PosPaymentMethod } from './pos-transaction.entity';
+import { SavedReport } from './saved-report.entity';
+import { DashboardWidget } from './dashboard-widget.entity';
+import { WorkflowRule } from './workflow-rule.entity';
+import { WorkflowLog, WorkflowLogStatus } from './workflow-log.entity';
 
 // Export entities
 export { 
@@ -113,6 +119,15 @@ export {
   TicketStatus,
   TicketComment,
   SlaRule,
+  PosSession,
+  PosSessionStatus,
+  PosTransaction,
+  PosPaymentMethod,
+  SavedReport,
+  DashboardWidget,
+  WorkflowRule,
+  WorkflowLog,
+  WorkflowLogStatus,
 };
 
 // Entity array for TypeORM (excluding enums)
@@ -160,5 +175,11 @@ export const entities = [
   Ticket,
   TicketComment,
   SlaRule,
+  PosSession,
+  PosTransaction,
+  SavedReport,
+  DashboardWidget,
+  WorkflowRule,
+  WorkflowLog,
 ];
 
