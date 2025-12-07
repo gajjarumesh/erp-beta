@@ -26,6 +26,9 @@ import { CrmModule } from './modules/crm/crm.module';
 import { ProductsModule } from './modules/products/products.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { AccountingModule } from './modules/accounting/accounting.module';
+import { HrModule } from './modules/hr/hr.module';
+import { ProjectsModule } from './modules/projects/projects.module';
+import { HelpdeskModule } from './modules/helpdesk/helpdesk.module';
 
 @Module({
   imports: [
@@ -77,6 +80,9 @@ import { AccountingModule } from './modules/accounting/accounting.module';
     ProductsModule,
     SalesModule,
     AccountingModule,
+    HrModule,
+    ProjectsModule,
+    HelpdeskModule,
   ],
   providers: [
     // Global guards
