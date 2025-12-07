@@ -4,6 +4,17 @@ import { Repository } from 'typeorm';
 import { WorkflowRule, WorkflowLog, WorkflowLogStatus } from '../../database/entities';
 import { CreateWorkflowRuleDto, UpdateWorkflowRuleDto, ExecuteWorkflowDto } from './dto/workflow-rule.dto';
 
+interface WorkflowCondition {
+  field: string;
+  operator: string;
+  value: any;
+}
+
+interface WorkflowConditions {
+  operator?: 'AND' | 'OR';
+  conditions: WorkflowCondition[];
+}
+
 @Injectable()
 export class WorkflowRulesService {
   constructor(
@@ -75,7 +86,7 @@ export class WorkflowRulesService {
     try {
       // Evaluate conditions
       const conditionsMatch = this.evaluateConditions(
-        workflow.conditions,
+        workflow.conditions as WorkflowConditions,
         executeDto.entityData,
       );
 
@@ -130,14 +141,14 @@ export class WorkflowRulesService {
     });
   }
 
-  private evaluateConditions(conditions: any, data: any): boolean {
+  private evaluateConditions(conditions: WorkflowConditions, data: Record<string, any>): boolean {
     if (!conditions) return true;
 
     const { operator, conditions: conditionsList } = conditions;
 
     if (!conditionsList || conditionsList.length === 0) return true;
 
-    const results = conditionsList.map((condition: any) => {
+    const results = conditionsList.map((condition: WorkflowCondition) => {
       return this.evaluateCondition(condition, data);
     });
 
@@ -149,16 +160,18 @@ export class WorkflowRulesService {
     return results.every((r: boolean) => r);
   }
 
-  private evaluateCondition(condition: any, data: any): boolean {
+  private evaluateCondition(condition: WorkflowCondition, data: Record<string, any>): boolean {
     const { field, operator, value } = condition;
     const fieldValue = this.getFieldValue(data, field);
 
     switch (operator) {
+      case '===':
       case '==':
       case '=':
-        return fieldValue == value;
+        return fieldValue === value; // Use strict equality
+      case '!==':
       case '!=':
-        return fieldValue != value;
+        return fieldValue !== value; // Use strict inequality
       case '>':
         return fieldValue > value;
       case '<':
@@ -178,7 +191,7 @@ export class WorkflowRulesService {
     }
   }
 
-  private getFieldValue(data: any, field: string): any {
+  private getFieldValue(data: Record<string, any>, field: string): any {
     const parts = field.split('.');
     let value = data;
     for (const part of parts) {

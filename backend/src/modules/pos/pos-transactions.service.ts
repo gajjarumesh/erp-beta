@@ -89,6 +89,8 @@ export class PosTransactionsService {
   }
 
   private async generateReceiptNumber(): Promise<string> {
+    // TODO: Consider using a database sequence or atomic counter for better
+    // concurrency handling and performance at scale
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');

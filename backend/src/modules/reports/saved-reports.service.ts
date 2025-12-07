@@ -98,6 +98,9 @@ export class SavedReportsService {
   }
 
   private async executeRevenueByMonth(params?: any): Promise<any> {
+    const startDate = params?.startDate || null;
+    const endDate = params?.endDate || null;
+    
     const query = `
       SELECT 
         TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') as month,
@@ -105,14 +108,18 @@ export class SavedReportsService {
         COUNT(*) as invoice_count
       FROM invoices
       WHERE status = 'paid'
-      ${params?.startDate ? `AND created_at >= '${params.startDate}'` : ''}
-      ${params?.endDate ? `AND created_at <= '${params.endDate}'` : ''}
+      ${startDate ? `AND created_at >= $1` : ''}
+      ${endDate ? `AND created_at <= $${startDate ? 2 : 1}` : ''}
       GROUP BY DATE_TRUNC('month', created_at)
       ORDER BY month DESC
       LIMIT 12
     `;
 
-    return this.dataSource.query(query);
+    const queryParams = [];
+    if (startDate) queryParams.push(startDate);
+    if (endDate) queryParams.push(endDate);
+
+    return this.dataSource.query(query, queryParams);
   }
 
   private async executeTopCustomers(params?: any): Promise<any> {
@@ -153,6 +160,9 @@ export class SavedReportsService {
   }
 
   private async executeTimesheetUtilization(params?: any): Promise<any> {
+    const startDate = params?.startDate || null;
+    const endDate = params?.endDate || null;
+    
     const query = `
       SELECT 
         u.name as employee_name,
@@ -162,13 +172,17 @@ export class SavedReportsService {
         AVG(t.hours_spent) as avg_hours_per_day
       FROM timesheets t
       JOIN users u ON u.id = t.user_id
-      ${params?.startDate ? `WHERE t.date >= '${params.startDate}'` : ''}
-      ${params?.endDate ? `${params?.startDate ? 'AND' : 'WHERE'} t.date <= '${params.endDate}'` : ''}
+      ${startDate ? `WHERE t.date >= $1` : ''}
+      ${endDate ? `${startDate ? 'AND' : 'WHERE'} t.date <= $${startDate ? 2 : 1}` : ''}
       GROUP BY u.id, u.name
       ORDER BY total_hours DESC
     `;
 
-    return this.dataSource.query(query);
+    const queryParams = [];
+    if (startDate) queryParams.push(startDate);
+    if (endDate) queryParams.push(endDate);
+
+    return this.dataSource.query(query, queryParams);
   }
 
   private async executeGenericQuery(config: any, params?: any): Promise<any> {
