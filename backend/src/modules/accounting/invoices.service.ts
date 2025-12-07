@@ -242,60 +242,71 @@ export class InvoicesService {
   }
 
   private async generateJournalEntry(invoice: Invoice, userId: string): Promise<void> {
-    // Generate journal entry based on invoice type
+    // Note: This is a placeholder implementation
+    // In production, this should be implemented with proper account mapping configuration
+    // TODO: Implement account mapping configuration system
+    // TODO: Get account IDs from tenant settings or configuration
+    
+    // For now, we skip journal entry generation
+    // The system will function for invoice tracking without automatic journal entries
+    // Manual journal entries can be created through the journal entries API
+    
+    return;
+    
+    /* Future implementation outline:
+    const accountMapping = await this.getAccountMapping(invoice.tenantId);
+    
     const lines = [];
-
+    
     if (invoice.type === InvoiceType.CUSTOMER) {
-      // Customer Invoice: Debit AR, Credit Revenue + Tax
       lines.push({
-        accountId: 'AR_ACCOUNT_ID', // TODO: Get from settings or chart of accounts
+        accountId: accountMapping.accountsReceivable,
         debit: invoice.total,
         credit: 0,
         description: `Customer Invoice ${invoice.invoiceNumber}`,
       });
-
+      
       lines.push({
-        accountId: 'REVENUE_ACCOUNT_ID', // TODO: Get from settings
+        accountId: accountMapping.revenue,
         debit: 0,
         credit: invoice.subtotal - invoice.discountTotal,
         description: `Revenue from ${invoice.invoiceNumber}`,
       });
-
+      
       if (invoice.taxTotal > 0) {
         lines.push({
-          accountId: 'TAX_PAYABLE_ACCOUNT_ID', // TODO: Get from settings
+          accountId: accountMapping.taxPayable,
           debit: 0,
           credit: invoice.taxTotal,
           description: `Tax on ${invoice.invoiceNumber}`,
         });
       }
     } else {
-      // Vendor Bill: Debit Expense + Tax, Credit AP
       lines.push({
-        accountId: 'EXPENSE_ACCOUNT_ID', // TODO: Get from settings
+        accountId: accountMapping.expense,
         debit: invoice.subtotal - invoice.discountTotal,
         credit: 0,
         description: `Expense from ${invoice.invoiceNumber}`,
       });
-
+      
       if (invoice.taxTotal > 0) {
         lines.push({
-          accountId: 'TAX_RECEIVABLE_ACCOUNT_ID', // TODO: Get from settings
+          accountId: accountMapping.taxReceivable,
           debit: invoice.taxTotal,
           credit: 0,
           description: `Tax on ${invoice.invoiceNumber}`,
         });
       }
-
+      
       lines.push({
-        accountId: 'AP_ACCOUNT_ID', // TODO: Get from settings
+        accountId: accountMapping.accountsPayable,
         debit: 0,
         credit: invoice.total,
         description: `Vendor Bill ${invoice.invoiceNumber}`,
       });
     }
-
-    // Note: This is a placeholder. In production, you would create the actual journal entry
-    // and link it to the invoice after implementing proper account mapping
+    
+    // Create journal entry via service
+    */
   }
 }

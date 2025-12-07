@@ -44,14 +44,6 @@ export class FinancialReportsService {
     tenantId: string,
     filters: FinancialReportFilterDto,
   ): Promise<BalanceSheetData> {
-    const accounts = await this.accountsRepository.find({
-      where: {
-        tenantId,
-        type: IsNull(), // Will be filtered below
-        deletedAt: IsNull(),
-      },
-    });
-
     const balances = await this.calculateAccountBalances(tenantId, filters);
 
     // Group by account type
@@ -120,14 +112,14 @@ export class FinancialReportsService {
 
       // Build date filter query
       let dateFilter = '';
-      const params: any[] = [account.id];
-      let paramIndex = 2;
+      const params: any[] = [account.id, tenantId];
+      let paramIndex = 3;
 
       if (filters.from || filters.to) {
         const joinQuery = `
           INNER JOIN journal_entries je ON je.id = journal_entry_lines.entry_id
           WHERE journal_entry_lines.account_id = $1
-            AND je.tenant_id = '${tenantId}'
+            AND je.tenant_id = $2
             AND je.deleted_at IS NULL
             AND je.is_posted = true
         `;
@@ -146,7 +138,7 @@ export class FinancialReportsService {
         dateFilter = `
           INNER JOIN journal_entries je ON je.id = journal_entry_lines.entry_id
           WHERE journal_entry_lines.account_id = $1
-            AND je.tenant_id = '${tenantId}'
+            AND je.tenant_id = $2
             AND je.deleted_at IS NULL
             AND je.is_posted = true
         `;

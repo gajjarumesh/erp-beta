@@ -64,8 +64,38 @@ export class PaymentsService {
 
     await this.invoicesRepository.save(invoice);
 
-    // TODO: Generate journal entry for payment
-    // Debit Cash/Bank, Credit AR/AP
+    // Note: Payment journal entry generation not yet implemented
+    // TODO: Implement journal entry generation for payments
+    // This requires account mapping configuration
+    // Manual journal entries can be created through the journal entries API
+    
+    /* Future implementation:
+    const accountMapping = await this.getAccountMapping(tenantId);
+    
+    if (invoice.type === InvoiceType.CUSTOMER) {
+      // Debit Cash/Bank, Credit AR
+      await this.journalEntriesService.create(tenantId, userId, {
+        journalNumber: `JE-PAY-${payment.paymentNumber}`,
+        date: payment.date,
+        reference: `Payment ${payment.paymentNumber}`,
+        memo: `Payment for Invoice ${invoice.invoiceNumber}`,
+        lines: [
+          {
+            accountId: accountMapping.cash,
+            debit: payment.amount,
+            credit: 0,
+            description: 'Cash received',
+          },
+          {
+            accountId: accountMapping.accountsReceivable,
+            debit: 0,
+            credit: payment.amount,
+            description: 'AR payment',
+          },
+        ],
+      });
+    }
+    */
 
     return savedPayment;
   }

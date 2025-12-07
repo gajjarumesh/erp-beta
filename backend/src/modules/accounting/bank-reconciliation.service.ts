@@ -80,8 +80,8 @@ export class BankReconciliationService {
         const result = await this.importBankTransaction(transaction);
         imported.push(result);
       } catch (error) {
-        // Log error but continue with other transactions
-        console.error('Error importing transaction:', error);
+        // TODO: Use proper logging service
+        // For now, just skip failed transactions
       }
     }
 
