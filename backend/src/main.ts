@@ -35,7 +35,7 @@ async function bootstrap() {
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('ERP Platform API')
-    .setDescription('Multi-tenant ERP Platform - Phase 0 Core Platform API')
+    .setDescription('Multi-tenant ERP Platform - Phase 0-6 Complete API')
     .setVersion('1.0')
     .addBearerAuth()
     .addTag('auth', 'Authentication endpoints')
@@ -46,6 +46,10 @@ async function bootstrap() {
     .addTag('audit', 'Audit logs')
     .addTag('files', 'File storage')
     .addTag('notifications', 'Notifications')
+    .addTag('integrations', 'External integrations')
+    .addTag('plugins', 'Plugin marketplace')
+    .addTag('health', 'Health checks')
+    .addTag('metrics', 'Prometheus metrics')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
